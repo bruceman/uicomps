@@ -1,0 +1,17 @@
+{
+  "name": "ui-component",
+  "version": "1.0.0",
+  "description": "",
+  "main": "EventBase.js",
+  "scripts": {
+    "build": "webpack --progress --colors --watch --config webpack.config.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
+    "webpack": "^3.10.0"
+  }
+}
