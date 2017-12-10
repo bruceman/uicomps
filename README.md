@@ -1,8 +1,18 @@
 # uicomps
 html UI component system demo and test
 
-## npm install
+## how to start
+1. install dependencies
+```js
+npm install
+```
 
-## npm run build
+2. build test code
+```js
+npm run build
+```
+
+3. open index.html
+
 
 
