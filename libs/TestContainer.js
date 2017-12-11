@@ -24,7 +24,6 @@ export default class TestContainer extends UIContainer {
             var component = this.getComponent(i);
             component.setMountPoint('#con-' + i);
             component.setContainer(this);
-            console.log(component)
         }
     }
 }

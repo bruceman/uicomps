@@ -10,7 +10,6 @@ export default class TestComponent extends UIComponent {
     }
 
     render() {
-        console.log(this);
         super.render();
     }
 

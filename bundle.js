@@ -60,44 +60,11 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _TestContainer = __webpack_require__(4);
-
-var _TestContainer2 = _interopRequireDefault(_TestContainer);
-
-var _TestComponent = __webpack_require__(1);
-
-var _TestComponent2 = _interopRequireDefault(_TestComponent);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var data = { msg: 'hello bruce' };
-var comp = new _TestComponent2.default();
-comp.setData(data);
-// comp.mount();
-
-var con = new _TestContainer2.default('#container');
-con.addComponent(comp);
-con.mount();
-
-setTimeout(function () {
-    data.msg = 'hello, linda';
-    con.update();
-}, 2000);
-
-console.log('index');
-
-/***/ }),
-/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -109,78 +76,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-var _UIComponent2 = __webpack_require__(2);
-
-var _UIComponent3 = _interopRequireDefault(_UIComponent2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var TestComponent = function (_UIComponent) {
-    _inherits(TestComponent, _UIComponent);
-
-    function TestComponent() {
-        _classCallCheck(this, TestComponent);
-
-        return _possibleConstructorReturn(this, (TestComponent.__proto__ || Object.getPrototypeOf(TestComponent)).apply(this, arguments));
-    }
-
-    _createClass(TestComponent, [{
-        key: 'getName',
-        value: function getName() {
-            return 'TestComponent';
-        }
-    }, {
-        key: 'getData',
-        value: function getData() {
-            return this._data;
-        }
-    }, {
-        key: 'render',
-        value: function render() {
-            console.log(this);
-            _get(TestComponent.prototype.__proto__ || Object.getPrototypeOf(TestComponent.prototype), 'render', this).call(this);
-        }
-    }, {
-        key: 'setData',
-        value: function setData(data) {
-            this._data = data;
-        }
-    }, {
-        key: 'getTemplate',
-        value: function getTemplate() {
-            return function (data) {
-                return '<span>get data: ' + data.msg + '</span>';
-            };
-        }
-    }]);
-
-    return TestComponent;
-}(_UIComponent3.default);
-
-exports.default = TestComponent;
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _EventBase2 = __webpack_require__(3);
+var _EventBase2 = __webpack_require__(4);
 
 var _EventBase3 = _interopRequireDefault(_EventBase2);
 
@@ -201,292 +97,672 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
  * @see EventBase
  */
 var UIComponent = function (_EventBase) {
-  _inherits(UIComponent, _EventBase);
-
-  /**
-   * Init component
-   *
-   * when mountPoint is omitted, should set a value by invoking setMountPoint manually.
-   *
-   * @param mountPoint {string|object} - the mount point for this ui component (may be CSS selector or jQuery Object) [optional]
-   * @param options {any} - the component options [optional]
-   */
-  function UIComponent(mountPoint, options) {
-    _classCallCheck(this, UIComponent);
-
-    var _this = _possibleConstructorReturn(this, (UIComponent.__proto__ || Object.getPrototypeOf(UIComponent)).call(this));
-
-    _this.setMountPoint(mountPoint);
-    _this.setOptions(options);
-    return _this;
-  }
-
-  /**
-   * Get component name
-   *
-   * Note: concrete component should override this value
-   */
-
-
-  _createClass(UIComponent, [{
-    key: 'getName',
-    value: function getName() {
-      return 'UIComponent';
-    }
+    _inherits(UIComponent, _EventBase);
 
     /**
-     * Get the mount point of this component
-     * The container can be dom selector ('#id', '.clazz-name') or Jquery object ($('#id'))
-     */
-
-  }, {
-    key: 'getMountPoint',
-    value: function getMountPoint() {
-      return this._mountPoint;
-    }
-
-    /**
-     * Set the mount point of this component
+     * Init component
      *
-     * Invoke this method will not re-render the component.
+     * when mountPoint is omitted, should set a value by invoking setMountPoint manually.
      *
-     * @param mountPoint {string|object} - the mount point for this ui component (may be CSS selector or jQuery Object)
+     * @param mountPoint {string|object} - the mount point for this ui component (may be CSS selector or jQuery Object) [optional]
+     * @param options {any} - the component options [optional]
      */
+    function UIComponent(mountPoint, options) {
+        _classCallCheck(this, UIComponent);
 
-  }, {
-    key: 'setMountPoint',
-    value: function setMountPoint(mountPoint) {
-      this._mountPoint = mountPoint;
-      this._$mountPoint = $(mountPoint);
+        var _this = _possibleConstructorReturn(this, (UIComponent.__proto__ || Object.getPrototypeOf(UIComponent)).call(this));
+
+        _this.setMountPoint(mountPoint);
+        _this.setOptions(options);
+        return _this;
     }
 
     /**
-     * Get passed options when init component
-     *
-     * @returns {any|object}
-     */
-
-  }, {
-    key: 'getOptions',
-    value: function getOptions() {
-      return this._options;
-    }
-
-    /**
-     * Set a new options of this component
-     *
-     * @param options
-     */
-
-  }, {
-    key: 'setOptions',
-    value: function setOptions(options) {
-      this._options = options || {};
-    }
-
-    /**
-     * Get the parent of this component
-     * 
-     * @see UIContainer
-     */
-
-  }, {
-    key: 'getContainer',
-    value: function getContainer() {
-      return this._container;
-    }
-
-    /**
-     * Set the parent of this component
-     *
-     * @param {UIContainer} container 
-     * 
-     * Note: the container shuold involke this method when add a new component
-     */
-
-  }, {
-    key: 'setContainer',
-    value: function setContainer(container) {
-      this._container = container;
-    }
-
-    /**
-     * Get template function of this component
-     *
-     * Note: concrete component should implement this method
-     */
-
-  }, {
-    key: 'getTemplate',
-    value: function getTemplate() {
-      throw new Error('[' + this.getName() + ']: need implement this method');
-    }
-
-    /**
-     * Get the data that used to render component
+     * Get component name
      *
      * Note: concrete component should override this value
      */
 
-  }, {
-    key: 'getData',
-    value: function getData() {
-      return {};
-    }
 
-    /**
-     * Append the component to the document and show the component
-     */
+    _createClass(UIComponent, [{
+        key: 'getName',
+        value: function getName() {
+            return 'UIComponent';
+        }
 
-  }, {
-    key: 'mount',
-    value: function mount() {
-      this.willMount();
-      this.render();
-      this.didMount();
-    }
+        /**
+         * Get the mount point of this component
+         * The container can be dom selector ('#id', '.clazz-name') or Jquery object ($('#id'))
+         */
 
-    /**
-     * Do something before component mount to the document
-     */
+    }, {
+        key: 'getMountPoint',
+        value: function getMountPoint() {
+            return this._mountPoint;
+        }
 
-  }, {
-    key: 'willMount',
-    value: function willMount() {}
+        /**
+         * Set the mount point of this component
+         *
+         * Invoke this method will not re-render the component.
+         *
+         * @param mountPoint {string|object} - the mount point for this ui component (may be CSS selector or jQuery Object)
+         */
 
-    /**
-     * Do something after component mounted to the document
-     */
+    }, {
+        key: 'setMountPoint',
+        value: function setMountPoint(mountPoint) {
+            this._mountPoint = mountPoint;
+            this._$mountPoint = $(mountPoint);
+        }
 
-  }, {
-    key: 'didMount',
-    value: function didMount() {}
+        /**
+         * Get passed options when init component
+         *
+         * @returns {any|object}
+         */
 
-    /**
-     * Update the component changes to the document
-     */
+    }, {
+        key: 'getOptions',
+        value: function getOptions() {
+            return this._options;
+        }
 
-  }, {
-    key: 'update',
-    value: function update() {
-      this.willUpdate();
-      this.render();
-      this.didUpdate();
-    }
+        /**
+         * Set a new options of this component
+         *
+         * @param options
+         */
 
-    /**
-     * Do something before component update
-     */
+    }, {
+        key: 'setOptions',
+        value: function setOptions(options) {
+            this._options = options || {};
+        }
 
-  }, {
-    key: 'willUpdate',
-    value: function willUpdate() {}
+        /**
+         * Get the parent of this component
+         * 
+         * @see UIContainer
+         */
 
-    /**
-     * Do something after component updated
-     */
+    }, {
+        key: 'getContainer',
+        value: function getContainer() {
+            return this._container;
+        }
 
-  }, {
-    key: 'didUpdate',
-    value: function didUpdate() {}
+        /**
+         * Set the parent of this component
+         *
+         * @param {UIContainer} container 
+         * 
+         * Note: the container shuold involke this method when add a new component
+         */
 
-    /**
-     * Render or re-render component by calling template function
-     */
+    }, {
+        key: 'setContainer',
+        value: function setContainer(container) {
+            this._container = container;
+        }
 
-  }, {
-    key: 'render',
-    value: function render() {
-      //using template function to render component
-      var html = this.getTemplate().call(this, this.getData());
-      this._$mountPoint.empty().html(html);
-      this.show();
-    }
+        /**
+         * Get template function of this component
+         *
+         * Note: concrete component should implement this method
+         */
 
-    /**
-     * Show component (commonly only set css display value)
-     *
-     * Note: this function never re-render component
-     */
+    }, {
+        key: 'getTemplate',
+        value: function getTemplate() {
+            throw new Error('[' + this.getName() + ']: need implement this method');
+        }
 
-  }, {
-    key: 'show',
-    value: function show() {
-      this._$mountPoint.show();
-      this._visible = true;
-    }
+        /**
+         * Get the data that used to render component
+         *
+         * Note: concrete component should override this value
+         */
 
-    /**
-     * Hide component (commonly only set css display value)
-     *
-     * Note: this function never re-render component
-     */
+    }, {
+        key: 'getData',
+        value: function getData() {
+            return {};
+        }
 
-  }, {
-    key: 'hide',
-    value: function hide() {
-      this._$mountPoint.hide();
-      this._visible = false;
-    }
+        /**
+         * Append the component to the document and show the component
+         */
 
-    /**
-     * Check component whether is visible
-     *
-     * @returns {boolean}
-     */
+    }, {
+        key: 'mount',
+        value: function mount() {
+            this.willMount();
+            this.render();
+            this.didMount();
+        }
 
-  }, {
-    key: 'isVisible',
-    value: function isVisible() {
-      return !!this._visible;
-    }
+        /**
+         * Do something before component mount to the document
+         */
 
-    /**
-     * Get component width (px value)
-     */
+    }, {
+        key: 'willMount',
+        value: function willMount() {}
 
-  }, {
-    key: 'getWidth',
-    value: function getWidth() {
-      return this._$mountPoint.width();
-    }
+        /**
+         * Do something after component mounted to the document
+         */
 
-    /**
-     * Get component height (px value)
-     */
+    }, {
+        key: 'didMount',
+        value: function didMount() {}
 
-  }, {
-    key: 'getHeight',
-    value: function getHeight() {
-      return this._$mountPoint.height();
-    }
+        /**
+         * Update the component changes to the document
+         * 
+         * @param forceUpdate {boolean} - whether force update even if UI have no changes [optional], default is false.
+         */
 
-    /**
-     * Destroy component from document and clean related global resources
-     *
-     * @param removeMountPoint {boolean} - remove mount point if true otherwise remove component dom only, default is false.
-     *
-     * Note: concrete component can override this method
-     */
+    }, {
+        key: 'update',
+        value: function update(forceUpdate) {
+            if (forceUpdate || this.shouldUpdate()) {
+                this.willUpdate();
+                this.render();
+                this.didUpdate();
+            }
+        }
 
-  }, {
-    key: 'destroy',
-    value: function destroy(removeMountPoint) {
-      if (removeMountPoint) {
-        this._$mountPoint.remove();
-      } else {
-        this._$mountPoint.empty();
-      }
-    }
-  }]);
+        /**
+         * Check whether need re-render UI
+         * Now just compare these fields: mountPoint, template, data
+         * 
+         */
 
-  return UIComponent;
+    }, {
+        key: 'shouldUpdate',
+        value: function shouldUpdate() {
+            //should update if not render before
+            if (!this._renderStates) {
+                return true;
+            }
+
+            // make sure this have no side effect to this component
+            var html = this.getTemplate().call(this, this.getData());
+            return html != this._renderStates.html || this.getMountPoint() != this._renderStates.mountPoint;
+        }
+
+        /**
+         * Do something before component update
+         */
+
+    }, {
+        key: 'willUpdate',
+        value: function willUpdate() {}
+
+        /**
+         * Do something after component updated
+         */
+
+    }, {
+        key: 'didUpdate',
+        value: function didUpdate() {}
+
+        /**
+         * Render or re-render component by calling template function
+         */
+
+    }, {
+        key: 'render',
+        value: function render() {
+            //using template function to render component
+            var html = this.getTemplate().call(this, this.getData());
+            this._$mountPoint.empty().html(html);
+            this._saveRenderStates(this.getMountPoint(), html);
+            this.show();
+        }
+
+        /**
+         * Show component (commonly only set css display value)
+         *
+         * Note: this function never re-render component
+         */
+
+    }, {
+        key: 'show',
+        value: function show() {
+            this._$mountPoint.show();
+            this._visible = true;
+        }
+
+        /**
+         * Hide component (commonly only set css display value)
+         *
+         * Note: this function never re-render component
+         */
+
+    }, {
+        key: 'hide',
+        value: function hide() {
+            this._$mountPoint.hide();
+            this._visible = false;
+        }
+
+        /**
+         * Check component whether is visible
+         *
+         * @returns {boolean}
+         */
+
+    }, {
+        key: 'isVisible',
+        value: function isVisible() {
+            return !!this._visible;
+        }
+
+        /**
+         * Get component width (px value)
+         */
+
+    }, {
+        key: 'getWidth',
+        value: function getWidth() {
+            return this._$mountPoint.width();
+        }
+
+        /**
+         * Get component height (px value)
+         */
+
+    }, {
+        key: 'getHeight',
+        value: function getHeight() {
+            return this._$mountPoint.height();
+        }
+
+        /**
+         * Destroy component from document and clean related global resources
+         *
+         * @param removeMountPoint {boolean} - remove mount point if true otherwise remove component dom only, default is false.
+         *
+         * Note: concrete component can override this method
+         */
+
+    }, {
+        key: 'destroy',
+        value: function destroy(removeMountPoint) {
+            if (removeMountPoint) {
+                this._$mountPoint.remove();
+            } else {
+                this._$mountPoint.empty();
+            }
+        }
+
+        // keep component render states
+
+    }, {
+        key: '_saveRenderStates',
+        value: function _saveRenderStates(mountPoint, html) {
+            this._renderStates = {
+                mountPoint: mountPoint,
+                html: html
+            };
+        }
+    }]);
+
+    return UIComponent;
 }(_EventBase3.default);
 
 exports.default = UIComponent;
 
 /***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _TestContainer = __webpack_require__(2);
+
+var _TestContainer2 = _interopRequireDefault(_TestContainer);
+
+var _TestComponent = __webpack_require__(5);
+
+var _TestComponent2 = _interopRequireDefault(_TestComponent);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var data = { msg: 'hello bruce', count: 1 };
+var comp = new _TestComponent2.default();
+comp.setData(data);
+
+var comp2 = new _TestComponent2.default();
+comp2.setData({ msg: 'no changes text' });
+
+// comp.mount();
+
+var con = new _TestContainer2.default('#container');
+con.addComponent(comp);
+con.addComponent(comp2);
+con.mount();
+
+setInterval(function () {
+    data.msg = 'hello-' + data.count++;
+    con.update();
+}, 1000);
+
+console.log('index');
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _UIContainer2 = __webpack_require__(3);
+
+var _UIContainer3 = _interopRequireDefault(_UIContainer2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var TestContainer = function (_UIContainer) {
+    _inherits(TestContainer, _UIContainer);
+
+    function TestContainer() {
+        _classCallCheck(this, TestContainer);
+
+        return _possibleConstructorReturn(this, (TestContainer.__proto__ || Object.getPrototypeOf(TestContainer)).apply(this, arguments));
+    }
+
+    _createClass(TestContainer, [{
+        key: 'getName',
+        value: function getName() {
+            return 'TestContainer';
+        }
+    }, {
+        key: 'getTemplate',
+        value: function getTemplate() {
+            return function () {
+                var len = this.getComponentCount();
+                var str = '';
+                for (var i = 0; i < len; i++) {
+                    str += '<li id="con-' + i + '"></li>';
+                }
+
+                return '<ul>' + str + '</ul>';
+            };
+        }
+    }, {
+        key: 'willRenderChildren',
+        value: function willRenderChildren() {
+            console.log('willRenderChildren');
+            for (var i = 0; i < this.getComponentCount(); i++) {
+                var component = this.getComponent(i);
+                component.setMountPoint('#con-' + i);
+                component.setContainer(this);
+            }
+        }
+    }]);
+
+    return TestContainer;
+}(_UIContainer3.default);
+
+exports.default = TestContainer;
+
+/***/ }),
 /* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _UIComponent2 = __webpack_require__(0);
+
+var _UIComponent3 = _interopRequireDefault(_UIComponent2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Created by bruce.li on 12/07/2017.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+/**
+ * The UIContainer object is a special UI component that can contain other UI components.
+ * Container component should inherit this class.
+ *
+ * @see UIComponent
+ */
+var UIContainer = function (_UIComponent) {
+    _inherits(UIContainer, _UIComponent);
+
+    /**
+     * Init container
+     *
+     * when mountPoint is omitted, should set a value by invoking setMountPoint manually.
+     *
+     * @param mountPoint {string|object} - the mount point for this ui component (may be CSS selector or jQuery Object) [optional]
+     * @param options {any} - the component options [optional]
+     */
+    function UIContainer(mountPoint, options) {
+        _classCallCheck(this, UIContainer);
+
+        var _this = _possibleConstructorReturn(this, (UIContainer.__proto__ || Object.getPrototypeOf(UIContainer)).call(this, mountPoint, options));
+
+        _this._components = [];
+        return _this;
+    }
+
+    /**
+     * Get container name
+     *
+     * Note: concrete container should override this value
+     */
+
+
+    _createClass(UIContainer, [{
+        key: 'getName',
+        value: function getName() {
+            return 'UIContainer';
+        }
+
+        /**
+         * Update the container and children changes to the document
+         * 
+         * @param forceUpdate {boolean} - whether force update even if UI have no changes , default is false. [optional]
+         */
+
+    }, {
+        key: 'update',
+        value: function update(forceUpdate) {
+            // container update
+            _get(UIContainer.prototype.__proto__ || Object.getPrototypeOf(UIContainer.prototype), 'update', this).call(this, forceUpdate);
+
+            // children update 
+            this._components.forEach(function (component) {
+                component.update(forceUpdate);
+            });
+        }
+
+        /**
+         * Render component by calling template function
+         *
+         * Note: concrete container can implement special render logic
+         */
+
+    }, {
+        key: 'render',
+        value: function render() {
+            //render container firstly (setup entry point)
+            _get(UIContainer.prototype.__proto__ || Object.getPrototypeOf(UIContainer.prototype), 'render', this).call(this);
+
+            // render children
+            if (this._components.length > 0) {
+                this.willRenderChildren();
+                this._components.forEach(function (component) {
+                    component.render();
+                });
+                this.didRenderChildren();
+            }
+        }
+
+        /**
+         * This method will be invoked before render children components
+         *
+         * Concrete container can implement this method to setup children entry points etc.
+         */
+
+    }, {
+        key: 'willRenderChildren',
+        value: function willRenderChildren() {}
+
+        /**
+         * This method will be invoked after render children components
+         */
+
+    }, {
+        key: 'didRenderChildren',
+        value: function didRenderChildren() {}
+
+        /**
+         * Add component to this container
+         *
+         * The new added component will not render on document util call render method of the container.
+         *
+         * @param component {UIComponent} - component
+         * @param index {number} - which position to add, add to the end of container if omit this parameter.
+         */
+
+    }, {
+        key: 'addComponent',
+        value: function addComponent(component, index) {
+            if (!component) {
+                throw new Error('[' + this.getName() + ']: \'component\' is required');
+            }
+
+            if (index >= 0 && index < this.getComponentCount()) {
+                this._components.splice(index, 0, component);
+            } else {
+                this._components.push(component);
+            }
+        }
+
+        /**
+         * Get the component at given position
+         *
+         * @param index
+         */
+
+    }, {
+        key: 'getComponent',
+        value: function getComponent(index) {
+            return this._components[index];
+        }
+
+        /**
+         * Get all children components in this container
+         *
+         * @returns {Array}
+         */
+
+    }, {
+        key: 'getAllComponents',
+        value: function getAllComponents() {
+            return this._components;
+        }
+
+        /**
+         * Get all children component count in this container
+         */
+
+    }, {
+        key: 'getComponentCount',
+        value: function getComponentCount() {
+            return this._components.length;
+        }
+
+        /**
+         * Remove component at given position
+         *
+         * @param index
+         */
+
+    }, {
+        key: 'removeComponent',
+        value: function removeComponent(index) {
+            if (index < this.getComponentCount()) {
+                var component = this._components.splice(index, 1)[0];
+                // let component clean its resources firstly
+                component.destroy();
+
+                return component;
+            }
+        }
+
+        /**
+         * Remove all children components in this container
+         */
+
+    }, {
+        key: 'removeAllComponents',
+        value: function removeAllComponents() {
+            // let all children components clean their resources
+            this._destroyChildrenComponents();
+            this._components = [];
+        }
+
+        /**
+         * Destroy component from document and clean related global resources
+         */
+
+    }, {
+        key: 'destroy',
+        value: function destroy() {
+            //distroy children firstly
+            this._destroyChildrenComponents();
+            _get(UIContainer.prototype.__proto__ || Object.getPrototypeOf(UIContainer.prototype), 'destroy', this).call(this);
+        }
+    }, {
+        key: '_destroyChildrenComponents',
+        value: function _destroyChildrenComponents() {
+            this._components.forEach(function (component) {
+                component.destroy();
+            });
+        }
+    }]);
+
+    return UIContainer;
+}(_UIComponent3.default);
+
+exports.default = UIContainer;
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -743,80 +1019,7 @@ var EventBase = function () {
     return EventBase;
 }();
 
-// export default EventBase;
-
-
 exports.default = EventBase;
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _UIContainer2 = __webpack_require__(5);
-
-var _UIContainer3 = _interopRequireDefault(_UIContainer2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var TestContainer = function (_UIContainer) {
-    _inherits(TestContainer, _UIContainer);
-
-    function TestContainer() {
-        _classCallCheck(this, TestContainer);
-
-        return _possibleConstructorReturn(this, (TestContainer.__proto__ || Object.getPrototypeOf(TestContainer)).apply(this, arguments));
-    }
-
-    _createClass(TestContainer, [{
-        key: 'getName',
-        value: function getName() {
-            return 'TestContainer';
-        }
-    }, {
-        key: 'getTemplate',
-        value: function getTemplate() {
-            return function () {
-                var len = this.getComponentCount();
-                var str = '';
-                for (var i = 0; i < len; i++) {
-                    str += '<li id="con-' + i + '"></li>';
-                }
-
-                return '<ul>' + str + '</ul>';
-            };
-        }
-    }, {
-        key: 'willRenderChildren',
-        value: function willRenderChildren() {
-            console.log('willRenderChildren');
-            for (var i = 0; i < this.getComponentCount(); i++) {
-                var component = this.getComponent(i);
-                component.setMountPoint('#con-' + i);
-                component.setContainer(this);
-                console.log(component);
-            }
-        }
-    }]);
-
-    return TestContainer;
-}(_UIContainer3.default);
-
-exports.default = TestContainer;
 
 /***/ }),
 /* 5 */
@@ -833,7 +1036,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _UIComponent2 = __webpack_require__(2);
+var _UIComponent2 = __webpack_require__(0);
 
 var _UIComponent3 = _interopRequireDefault(_UIComponent2);
 
@@ -843,200 +1046,50 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Created by bruce.li on 12/07/2017.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-/**
- * The UIContainer object is a special UI component that can contain other UI components.
- * Container component should inherit this class.
- *
- * @see UIComponent
- */
-var UIContainer = function (_UIComponent) {
-    _inherits(UIContainer, _UIComponent);
+var TestComponent = function (_UIComponent) {
+    _inherits(TestComponent, _UIComponent);
 
-    /**
-     * Init container
-     *
-     * when mountPoint is omitted, should set a value by invoking setMountPoint manually.
-     *
-     * @param mountPoint {string|object} - the mount point for this ui component (may be CSS selector or jQuery Object) [optional]
-     * @param options {any} - the component options [optional]
-     */
-    function UIContainer(mountPoint, options) {
-        _classCallCheck(this, UIContainer);
+    function TestComponent() {
+        _classCallCheck(this, TestComponent);
 
-        var _this = _possibleConstructorReturn(this, (UIContainer.__proto__ || Object.getPrototypeOf(UIContainer)).call(this, mountPoint, options));
-
-        _this._components = [];
-        return _this;
+        return _possibleConstructorReturn(this, (TestComponent.__proto__ || Object.getPrototypeOf(TestComponent)).apply(this, arguments));
     }
 
-    /**
-     * Get container name
-     *
-     * Note: concrete container should override this value
-     */
-
-
-    _createClass(UIContainer, [{
+    _createClass(TestComponent, [{
         key: 'getName',
         value: function getName() {
-            return 'UIContainer';
+            return 'TestComponent';
         }
-
-        /**
-         * Render component by calling template function
-         *
-         * Note: concrete container can implement special render logic
-         */
-
+    }, {
+        key: 'getData',
+        value: function getData() {
+            return this._data;
+        }
     }, {
         key: 'render',
         value: function render() {
-            //render container firstly (setup entry point)
-            _get(UIContainer.prototype.__proto__ || Object.getPrototypeOf(UIContainer.prototype), 'render', this).call(this);
-
-            if (this._components.length > 0) {
-                this.willRenderChildren();
-                this._components.forEach(function (component) {
-                    component.render();
-                });
-                this.didRenderChildren();
-            }
-        }
-
-        /**
-         * This method will be invoked before render children components
-         *
-         * Concrete container can implement this method to setup children entry points etc.
-         */
-
-    }, {
-        key: 'willRenderChildren',
-        value: function willRenderChildren() {}
-
-        /**
-         * This method will be invoked after render children components
-         */
-
-    }, {
-        key: 'didRenderChildren',
-        value: function didRenderChildren() {}
-
-        /**
-         * Destroy component from document and clean related global resources
-         */
-
-    }, {
-        key: 'destroy',
-        value: function destroy() {
-            //distroy children firstly
-            this._destroyChildrenComponents();
-            _get(UIContainer.prototype.__proto__ || Object.getPrototypeOf(UIContainer.prototype), 'destroy', this).call(this);
-        }
-
-        /**
-         * Add component to this container
-         *
-         * The new added component will not render on document util call render method of the container.
-         *
-         * @param component {UIComponent} - component
-         * @param index {number} - which position to add, add to the end of container if omit this parameter.
-         */
-
-    }, {
-        key: 'addComponent',
-        value: function addComponent(component, index) {
-            if (!component) {
-                throw new Error('[' + this.getName() + ']: \'component\' is required');
-            }
-
-            if (index >= 0 && index < this.getComponentCount()) {
-                this._components.splice(index, 0, component);
-            } else {
-                this._components.push(component);
-            }
-        }
-
-        /**
-         * Get the component at given position
-         *
-         * @param index
-         */
-
-    }, {
-        key: 'getComponent',
-        value: function getComponent(index) {
-            return this._components[index];
-        }
-
-        /**
-         * Get all children components in this container
-         *
-         * @returns {Array}
-         */
-
-    }, {
-        key: 'getAllComponents',
-        value: function getAllComponents() {
-            return this._components;
-        }
-
-        /**
-         * Get all children component count in this container
-         */
-
-    }, {
-        key: 'getComponentCount',
-        value: function getComponentCount() {
-            return this._components.length;
-        }
-
-        /**
-         * Remove component at given position
-         *
-         * @param index
-         */
-
-    }, {
-        key: 'removeComponent',
-        value: function removeComponent(index) {
-            if (index < this.getComponentCount()) {
-                var component = this._components.splice(index, 1)[0];
-                // let component clean its resources
-                if (component.destroy) {
-                    component.destroy();
-                }
-                return component;
-            }
-        }
-
-        /**
-         * Remove all children components in this container
-         */
-
-    }, {
-        key: 'removeAllComponents',
-        value: function removeAllComponents() {
-            // let all children components clean their resources
-            this._destroyChildrenComponents();
-            this._components = [];
+            _get(TestComponent.prototype.__proto__ || Object.getPrototypeOf(TestComponent.prototype), 'render', this).call(this);
         }
     }, {
-        key: '_destroyChildrenComponents',
-        value: function _destroyChildrenComponents() {
-            this._components.forEach(function (component) {
-                component.destroy();
-            });
+        key: 'setData',
+        value: function setData(data) {
+            this._data = data;
+        }
+    }, {
+        key: 'getTemplate',
+        value: function getTemplate() {
+            return function (data) {
+                return '<span>get data: ' + data.msg + '</span>';
+            };
         }
     }]);
 
-    return UIContainer;
+    return TestComponent;
 }(_UIComponent3.default);
 
-exports.default = UIContainer;
+exports.default = TestComponent;
 
 /***/ })
 /******/ ]);

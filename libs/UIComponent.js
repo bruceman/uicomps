@@ -134,11 +134,31 @@ export default class UIComponent extends EventBase {
 
     /**
      * Update the component changes to the document
+     * 
+     * @param forceUpdate {boolean} - whether force update even if UI have no changes [optional], default is false.
      */
-    update(){
-        this.willUpdate();
-        this.render();
-        this.didUpdate();
+    update(forceUpdate) {
+        if (forceUpdate || this.shouldUpdate()) {
+            this.willUpdate();
+            this.render();
+            this.didUpdate();
+        }
+    }
+
+    /**
+     * Check whether need re-render UI
+     * Now just compare these fields: mountPoint, template, data
+     * 
+     */
+    shouldUpdate() {
+        //should update if not render before
+        if (!this._renderStates) {
+            return true;
+        }
+        
+        // make sure this have no side effect to this component
+        const html = this.getTemplate().call(this, (this.getData()));
+        return (html != this._renderStates.html) || (this.getMountPoint() != this._renderStates.mountPoint);
     }
 
     /**
@@ -158,8 +178,9 @@ export default class UIComponent extends EventBase {
      */
     render() {
         //using template function to render component
-        let html = this.getTemplate().call(this, (this.getData()));
+        const html = this.getTemplate().call(this, (this.getData()));
         this._$mountPoint.empty().html(html);
+        this._saveRenderStates(this.getMountPoint(), html);
         this.show();
     }
 
@@ -218,6 +239,14 @@ export default class UIComponent extends EventBase {
             this._$mountPoint.remove()
         } else {
             this._$mountPoint.empty();
+        }
+    }
+
+    // keep component render states
+    _saveRenderStates(mountPoint, html) {
+        this._renderStates = {
+            mountPoint,
+            html
         }
     }
 }

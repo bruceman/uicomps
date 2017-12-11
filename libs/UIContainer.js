@@ -35,6 +35,21 @@ export default class UIContainer extends UIComponent {
     }
 
     /**
+     * Update the container and children changes to the document
+     * 
+     * @param forceUpdate {boolean} - whether force update even if UI have no changes , default is false. [optional]
+     */
+    update(forceUpdate) {
+        // container update
+        super.update(forceUpdate);
+
+        // children update 
+        this._components.forEach((component) => {
+            component.update(forceUpdate);
+        });
+    }
+
+    /**
      * Render component by calling template function
      *
      * Note: concrete container can implement special render logic
@@ -43,6 +58,7 @@ export default class UIContainer extends UIComponent {
         //render container firstly (setup entry point)
         super.render();
 
+        // render children
         if (this._components.length > 0) {
             this.willRenderChildren();
             this._components.forEach((component) => {
@@ -64,15 +80,6 @@ export default class UIContainer extends UIComponent {
      * This method will be invoked after render children components
      */
     didRenderChildren() {
-    }
-
-    /**
-     * Destroy component from document and clean related global resources
-     */
-    destroy() {
-        //distroy children firstly
-        this._destroyChildrenComponents();
-        super.destroy();
     }
 
     /**
@@ -127,11 +134,10 @@ export default class UIContainer extends UIComponent {
      */
     removeComponent(index) {
         if (index < this.getComponentCount()) {
-            let component = this._components.splice(index,1)[0];
-            // let component clean its resources
-            if (component.destroy) {
-                component.destroy();
-            }
+            const component = this._components.splice(index,1)[0];
+            // let component clean its resources firstly
+            component.destroy();
+           
             return component;
         }
     }
@@ -143,6 +149,15 @@ export default class UIContainer extends UIComponent {
         // let all children components clean their resources
         this._destroyChildrenComponents();
         this._components = [];
+    }
+
+    /**
+     * Destroy component from document and clean related global resources
+     */
+    destroy() {
+        //distroy children firstly
+        this._destroyChildrenComponents();
+        super.destroy();
     }
 
     _destroyChildrenComponents() {
