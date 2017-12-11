@@ -235,11 +235,27 @@ export default class UIComponent extends EventBase {
      * Note: concrete component can override this method
      */
     destroy(removeMountPoint) {
+        this.willDestroy();
+
         if (removeMountPoint) {
             this._$mountPoint.remove()
         } else {
             this._$mountPoint.empty();
         }
+        
+        this.didDestroy();
+    }
+
+    /**
+     * Do something before component destroy
+     */
+    willDestroy() {
+    }
+
+    /**
+     * Do someting after component destroy
+     */
+    didDestroy() {
     }
 
     // keep component render states
