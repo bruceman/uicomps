@@ -276,7 +276,7 @@ var UIComponent = function (_EventBase) {
 
         /**
          * Check whether need re-render UI
-         * Now just compare these fields: mountPoint, template, data
+         * Now just compare mount point and generated html to identify whether 
          * 
          */
 
@@ -290,7 +290,7 @@ var UIComponent = function (_EventBase) {
 
             // make sure this have no side effect to this component
             var html = this.getTemplate().call(this, this.getData());
-            return html != this._renderStates.html || this.getMountPoint() != this._renderStates.mountPoint;
+            return html != this._renderStates.html || !this._isSameMountPoint(this.getMountPoint(), this._renderStates.mountPoint);
         }
 
         /**
@@ -409,6 +409,27 @@ var UIComponent = function (_EventBase) {
                 html: html
             };
         }
+
+        // compare two mount point 
+
+    }, {
+        key: '_isSameMountPoint',
+        value: function _isSameMountPoint(mp1, mp2) {
+            if (!mp1 || !mp2) {
+                return false;
+            }
+
+            // compare raw object if there are jquery object wrapper
+            if (mp1 instanceof jQuery) {
+                mp1 = mp1[0];
+            }
+
+            if (mp2 instanceof jQuery) {
+                mp2 == mp2[0];
+            }
+
+            return mp1 == mp2;
+        }
     }]);
 
     return UIComponent;
@@ -440,17 +461,28 @@ comp.setData(data);
 var comp2 = new _TestComponent2.default();
 comp2.setData({ msg: 'no changes text' });
 
+var comp3 = new _TestComponent2.default();
+comp3.setData({ msg: '123123123' });
+
 // comp.mount();
 
 var con = new _TestContainer2.default('#container');
 con.addComponent(comp);
 con.addComponent(comp2);
+con.addComponent(comp3);
+
 con.mount();
 
 setInterval(function () {
     data.msg = 'hello-' + data.count++;
     con.update();
 }, 1000);
+
+setTimeout(function () {
+    //remove last
+    console.log('remove comp:');
+    con.removeComponent(con.getComponentCount() - 1, true);
+}, 3000);
 
 console.log('index');
 
@@ -709,16 +741,17 @@ var UIContainer = function (_UIComponent) {
         /**
          * Remove component at given position
          *
-         * @param index
+         * @param index {integer} - component index position
+         * @param removeMountPoint {boolean} - remove mount point if true otherwise remove component dom only
          */
 
     }, {
         key: 'removeComponent',
-        value: function removeComponent(index) {
+        value: function removeComponent(index, removeMountPoint) {
             if (index < this.getComponentCount()) {
                 var component = this._components.splice(index, 1)[0];
                 // let component clean its resources firstly
-                component.destroy();
+                component.destroy(removeMountPoint);
 
                 return component;
             }
@@ -726,32 +759,36 @@ var UIContainer = function (_UIComponent) {
 
         /**
          * Remove all children components in this container
+         * 
+         * @param removeMountPoint {boolean} - remove mount point if true otherwise remove component dom only
          */
 
     }, {
         key: 'removeAllComponents',
-        value: function removeAllComponents() {
+        value: function removeAllComponents(removeMountPoint) {
             // let all children components clean their resources
-            this._destroyChildrenComponents();
+            this._destroyChildrenComponents(removeMountPoint);
             this._components = [];
         }
 
         /**
          * Destroy component from document and clean related global resources
+         * 
+         * @param removeMountPoint {boolean} - remove mount point if true otherwise remove component dom only
          */
 
     }, {
         key: 'destroy',
-        value: function destroy() {
+        value: function destroy(removeMountPoint) {
             //distroy children firstly
-            this._destroyChildrenComponents();
-            _get(UIContainer.prototype.__proto__ || Object.getPrototypeOf(UIContainer.prototype), 'destroy', this).call(this);
+            this._destroyChildrenComponents(removeMountPoint);
+            _get(UIContainer.prototype.__proto__ || Object.getPrototypeOf(UIContainer.prototype), 'destroy', this).call(this, removeMountPoint);
         }
     }, {
         key: '_destroyChildrenComponents',
-        value: function _destroyChildrenComponents() {
+        value: function _destroyChildrenComponents(removeMountPoint) {
             this._components.forEach(function (component) {
-                component.destroy();
+                component.destroy(removeMountPoint);
             });
         }
     }]);

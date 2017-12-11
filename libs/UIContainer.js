@@ -130,13 +130,14 @@ export default class UIContainer extends UIComponent {
     /**
      * Remove component at given position
      *
-     * @param index
+     * @param index {integer} - component index position
+     * @param removeMountPoint {boolean} - remove mount point if true otherwise remove component dom only
      */
-    removeComponent(index) {
+    removeComponent(index, removeMountPoint) {
         if (index < this.getComponentCount()) {
             const component = this._components.splice(index,1)[0];
             // let component clean its resources firstly
-            component.destroy();
+            component.destroy(removeMountPoint);
            
             return component;
         }
@@ -144,25 +145,29 @@ export default class UIContainer extends UIComponent {
 
     /**
      * Remove all children components in this container
+     * 
+     * @param removeMountPoint {boolean} - remove mount point if true otherwise remove component dom only
      */
-    removeAllComponents() {
+    removeAllComponents(removeMountPoint) {
         // let all children components clean their resources
-        this._destroyChildrenComponents();
+        this._destroyChildrenComponents(removeMountPoint);
         this._components = [];
     }
 
     /**
      * Destroy component from document and clean related global resources
+     * 
+     * @param removeMountPoint {boolean} - remove mount point if true otherwise remove component dom only
      */
-    destroy() {
+    destroy(removeMountPoint) {
         //distroy children firstly
-        this._destroyChildrenComponents();
-        super.destroy();
+        this._destroyChildrenComponents(removeMountPoint);
+        super.destroy(removeMountPoint);
     }
 
-    _destroyChildrenComponents() {
+    _destroyChildrenComponents(removeMountPoint) {
         this._components.forEach((component) => {
-            component.destroy();
+            component.destroy(removeMountPoint);
         });
     }
 

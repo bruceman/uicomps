@@ -146,9 +146,9 @@ export default class UIComponent extends EventBase {
     }
 
     /**
-     * Check whether need re-render UI
-     * Now just compare these fields: mountPoint, template, data
-     * 
+     * Check whether need re-render UI (for saving un-neccessary re-render action)
+     * Now just compare mount point and generated html to identify whether we should update UI.
+     * So it will not re-render when component have no changes, but it will re-render container when add/remove children.
      */
     shouldUpdate() {
         //should update if not render before
@@ -158,7 +158,7 @@ export default class UIComponent extends EventBase {
         
         // make sure this have no side effect to this component
         const html = this.getTemplate().call(this, (this.getData()));
-        return (html != this._renderStates.html) || (this.getMountPoint() != this._renderStates.mountPoint);
+        return (html != this._renderStates.html) || !this._isSameMountPoint(this.getMountPoint(), this._renderStates.mountPoint);
     }
 
     /**
@@ -248,5 +248,23 @@ export default class UIComponent extends EventBase {
             mountPoint,
             html
         }
+    }
+
+    // compare two mount point 
+    _isSameMountPoint(mp1, mp2) {
+        if (!mp1 || !mp2) {
+            return false;
+        }
+
+        // compare raw object if there are jquery object wrapper
+        if (mp1 instanceof jQuery) {
+            mp1 = mp1[0];
+        }
+
+        if (mp2 instanceof jQuery) {
+            mp2 == mp2[0];
+        }
+
+        return mp1 == mp2;
     }
 }
