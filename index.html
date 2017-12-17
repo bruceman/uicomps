@@ -4,11 +4,39 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title>ui component test</title>
-	<link rel="stylesheet" href="">
+	<style>
+		.imglist {
+			width: 100%;
+			overflow: scroll;
+		}
+
+		.imgs {
+			width: 2100px;
+		}
+
+		.img {
+			display: inline-block;
+		}
+
+		img {
+			width: 400px;
+			height: 200px;
+		}
+	</style>
 </head>
 <body>
 	<h1>ui test</h1>
 	<div id="container"></div>
+	<div class="imglist">
+		<div class="imgs">
+			<span class="img"></span>
+			<span class="img"></span>
+			<span class="img"></span>
+			<span class="img"></span>
+			<span class="img"></span>
+		</div>
+	</div>
+	
 	<script src="libs/jquery-3.2.1.js"></script>
 	<script src="bundle.js"></script>
 </body>

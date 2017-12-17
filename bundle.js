@@ -112,6 +112,7 @@ var UIComponent = function (_EventBase) {
 
         var _this = _possibleConstructorReturn(this, (UIComponent.__proto__ || Object.getPrototypeOf(UIComponent)).call(this));
 
+        _this._cid = _this.generateCid();
         _this.setMountPoint(mountPoint);
         _this.setOptions(options);
         return _this;
@@ -128,6 +129,28 @@ var UIComponent = function (_EventBase) {
         key: 'getName',
         value: function getName() {
             return 'UIComponent';
+        }
+
+        /**
+         * Get component id
+         */
+
+    }, {
+        key: 'getCid',
+        value: function getCid() {
+            return this._cid;
+        }
+
+        /**
+         * Generate a unique component id
+         * 
+         * Sample: cid_dalma60az2e_50
+         */
+
+    }, {
+        key: 'generateCid',
+        value: function generateCid() {
+            return 'cid_' + Math.random().toString(36).substr(2) + '_' + Math.floor(Math.random() * 100);
         }
 
         /**
@@ -275,9 +298,9 @@ var UIComponent = function (_EventBase) {
         }
 
         /**
-         * Check whether need re-render UI
-         * Now just compare mount point and generated html to identify whether 
-         * 
+         * Check whether need re-render UI (for saving un-neccessary re-render action)
+         * Now just compare mount point and generated html to identify whether we should update UI.
+         * So it will not re-render when component have no changes, but it will re-render container when add/remove children.
          */
 
     }, {
@@ -392,12 +415,32 @@ var UIComponent = function (_EventBase) {
     }, {
         key: 'destroy',
         value: function destroy(removeMountPoint) {
+            this.willDestroy();
+
             if (removeMountPoint) {
                 this._$mountPoint.remove();
             } else {
                 this._$mountPoint.empty();
             }
+
+            this.didDestroy();
         }
+
+        /**
+         * Do something before component destroy
+         */
+
+    }, {
+        key: 'willDestroy',
+        value: function willDestroy() {}
+
+        /**
+         * Do someting after component destroy
+         */
+
+    }, {
+        key: 'didDestroy',
+        value: function didDestroy() {}
 
         // keep component render states
 
@@ -452,6 +495,10 @@ var _TestComponent = __webpack_require__(5);
 
 var _TestComponent2 = _interopRequireDefault(_TestComponent);
 
+var _LazyImage = __webpack_require__(6);
+
+var _LazyImage2 = _interopRequireDefault(_LazyImage);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var data = { msg: 'hello bruce', count: 1 };
@@ -483,6 +530,19 @@ setTimeout(function () {
     console.log('remove comp:');
     con.removeComponent(con.getComponentCount() - 1, true);
 }, 3000);
+
+$('.img').each(function (index, img) {
+    var img = new _LazyImage2.default(img, {
+        src: 'http://www.2cto.com/uploadfile/Collfiles/20160922/2016092209185687.png'
+    });
+    img.mount();
+});
+
+// var img = new LazyImage('#img', {
+//     src: 'http://www.2cto.com/uploadfile/Collfiles/20160922/2016092209185687.png'
+// })
+
+// img.mount();
 
 console.log('index');
 
@@ -1127,6 +1187,139 @@ var TestComponent = function (_UIComponent) {
 }(_UIComponent3.default);
 
 exports.default = TestComponent;
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _UIComponent2 = __webpack_require__(0);
+
+var _UIComponent3 = _interopRequireDefault(_UIComponent2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * LazyImage
+ * 
+ * new LazyImage('#img1', {
+ *   'src': './sample.png',
+ *   'retry': 2  [optional]
+ * })
+ */
+var LazyImage = function (_UIComponent) {
+    _inherits(LazyImage, _UIComponent);
+
+    function LazyImage(mountPoint, options) {
+        _classCallCheck(this, LazyImage);
+
+        var _this = _possibleConstructorReturn(this, (LazyImage.__proto__ || Object.getPrototypeOf(LazyImage)).call(this, mountPoint, options));
+
+        _this._src = options.src;
+        _this._retry = options.retry || 2;
+        return _this;
+    }
+
+    _createClass(LazyImage, [{
+        key: 'getName',
+        value: function getName() {
+            return 'LazyImage';
+        }
+    }, {
+        key: 'getTemplate',
+        value: function getTemplate() {
+            return function (data) {
+                return '<img class="lazy-image" id="' + this.getCid() + '"></img>';
+            };
+        }
+    }, {
+        key: 'didMount',
+        value: function didMount() {
+            var _this2 = this;
+
+            $(window).on('scroll resize', function () {
+                console.log('scroll ....');
+                _this2.requestScroll();
+            });
+        }
+
+        // location helper
+
+    }, {
+        key: 'getLoc',
+        value: function getLoc() {
+            return window.scrollY || window.pageYOffset;
+        }
+
+        // debounce helpers
+
+    }, {
+        key: 'requestScroll',
+        value: function requestScroll() {
+            this._prevLoc = this.getLoc();
+            this.requestFrame();
+        }
+    }, {
+        key: 'requestFrame',
+        value: function requestFrame() {
+            var _this3 = this;
+
+            if (!this._ticking) {
+                window.requestAnimationFrame(function () {
+                    var node = document.getElementById(_this3.getCid());
+                    if (_this3.inViewport(node)) {
+                        console.log('set src');
+                        node.setAttribute('src', _this3._src);
+                        _this3._ticking = true;
+                    }
+                });
+            }
+        }
+
+        // offset helper
+
+    }, {
+        key: 'getOffset',
+        value: function getOffset(node) {
+            return node.getBoundingClientRect().top + this._prevLoc;
+        }
+
+        // in viewport helper
+
+    }, {
+        key: 'inViewport',
+        value: function inViewport(node) {
+            var windowHeight = window.innerHeight;
+            var viewTop = this._prevLoc;
+            var viewBot = viewTop + windowHeight;
+
+            var nodeTop = this.getOffset(node);
+            var nodeBot = nodeTop + node.offsetHeight;
+
+            var offset = 20 / 100 * windowHeight;
+
+            return nodeBot >= viewTop - offset && nodeTop <= viewBot + offset;
+        }
+    }]);
+
+    return LazyImage;
+}(_UIComponent3.default);
+
+exports.default = LazyImage;
 
 /***/ })
 /******/ ]);

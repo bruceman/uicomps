@@ -22,6 +22,7 @@ export default class UIComponent extends EventBase {
      */
     constructor(mountPoint, options) {
         super();
+        this._cid = this.generateCid();
         this.setMountPoint(mountPoint);
         this.setOptions(options);
     }
@@ -33,6 +34,22 @@ export default class UIComponent extends EventBase {
      */
     getName() {
         return 'UIComponent';
+    }
+
+    /**
+     * Get component id
+     */
+    getCid() {
+        return this._cid;
+    }
+
+    /**
+     * Generate a unique component id
+     * 
+     * Sample: cid_dalma60az2e_50
+     */
+    generateCid() {
+        return 'cid_' + Math.random().toString(36).substr(2) + '_' + Math.floor(Math.random() * 100);
     }
 
     /**

@@ -1,6 +1,8 @@
 import TestContainer from "./libs/TestContainer";
 import TestComponent from "./libs/TestComponent";
 
+import LazyImage from './libs/LazyImage';
+
 var data = {msg: 'hello bruce', count: 1};
 var comp = new TestComponent();
 comp.setData(data);
@@ -30,5 +32,18 @@ setTimeout(function() {
     console.log('remove comp:')
     con.removeComponent(con.getComponentCount() - 1, true);
 }, 3000);
+
+$('.img').each(function (index, img) {
+    var img = new LazyImage(img, {
+        src: 'http://www.2cto.com/uploadfile/Collfiles/20160922/2016092209185687.png'
+    })
+    img.mount();
+})
+
+// var img = new LazyImage('#img', {
+//     src: 'http://www.2cto.com/uploadfile/Collfiles/20160922/2016092209185687.png'
+// })
+
+// img.mount();
 
 console.log('index');
