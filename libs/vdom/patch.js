@@ -46,7 +46,7 @@ function applyPatches (node, currentPatches) {
         if (node.textContent) {
           node.textContent = currentPatch.content
         } else {
-          // fuck ie
+          // old ie
           node.nodeValue = currentPatch.content
         }
         break
@@ -99,10 +99,10 @@ function reorderChildren (node, moves) {
   })
 }
 
+// patch types
 patch.REPLACE = REPLACE
 patch.REORDER = REORDER
 patch.PROPS = PROPS
 patch.TEXT = TEXT
-
 
 export default patch

@@ -1,4 +1,4 @@
-var listDiff = require('list-diff2')
+import listDiff from "list-diff2";
 import _ from './util';
 import patch from "./patch";
 

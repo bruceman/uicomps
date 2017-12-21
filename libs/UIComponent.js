@@ -171,13 +171,12 @@ export default class UIComponent extends EventBase {
      */
     shouldUpdate() {
         //should update if not render before
-        if (!this._renderStates) {
+        if (!this._lastRender) {
             return true;
         }
-
         // make sure this have no side effect to this component
         const html = this.getTemplate().call(this, (this.getData()));
-        return (html != this._renderStates.html) || !this._isSameMountPoint(this.getMountPoint(), this._renderStates.mountPoint);
+        return (html != this._lastRender.html) || !this._isSameMountPoint(this.getMountPoint(), this._lastRender.mountPoint);
     }
 
     /**
@@ -198,20 +197,26 @@ export default class UIComponent extends EventBase {
     render() {
         //using template function to render component
         const html = this.getTemplate().call(this, (this.getData()));
+        // generate virtual dom tree
         const tree = vdom.parse(html);
-
-        if (this._renderStates) {
-            const patches = vdom.diff(this._renderStates.tree, tree);
-            vdom.patch(this._renderStates.root, patches);
-            this._renderStates.html = html;
-            this._renderStates.tree = tree;
-            console.log('do patch');
+        const lastRender = this._lastRender;
+        // update component
+        if (lastRender) {
+            // diff two trees: last and current 
+            const patches = vdom.diff(lastRender.tree, tree);
+            if (!this._isEmptyObject(patches)) {
+                // patch last dom tree
+                vdom.patch(lastRender.root, patches);
+                // save changes
+                lastRender.html = html;
+                lastRender.tree = tree;
+            }
         } else {
-            // first render
+            // first time render dom tree
             const root = tree.render();
             this._$mountPoint.empty().html(root);
             // save render states
-            this._renderStates = { mountPoint: this.getMountPoint(), html, tree, root }
+            this._lastRender = { mountPoint: this.getMountPoint(), html, tree, root}
         }
 
         this.show();
@@ -333,5 +338,19 @@ export default class UIComponent extends EventBase {
         }
 
         return mp1 == mp2;
+    }
+
+    _isEmptyObject(obj) {
+        if (obj == null || obj == undefined) {
+            return true;
+        }
+
+        for (var key in obj) {
+            if (hasOwnProperty.call(obj, key)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

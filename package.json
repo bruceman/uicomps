@@ -15,7 +15,6 @@
     "webpack": "^3.10.0"
   },
   "dependencies": {
-    "html-parse-stringify": "^1.0.2",
     "list-diff2": "^0.1.4"
   }
 }

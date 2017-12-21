@@ -312,13 +312,12 @@ var UIComponent = function (_EventBase) {
         key: 'shouldUpdate',
         value: function shouldUpdate() {
             //should update if not render before
-            if (!this._renderStates) {
+            if (!this._lastRender) {
                 return true;
             }
-
             // make sure this have no side effect to this component
             var html = this.getTemplate().call(this, this.getData());
-            return html != this._renderStates.html || !this._isSameMountPoint(this.getMountPoint(), this._renderStates.mountPoint);
+            return html != this._lastRender.html || !this._isSameMountPoint(this.getMountPoint(), this._lastRender.mountPoint);
         }
 
         /**
@@ -346,20 +345,26 @@ var UIComponent = function (_EventBase) {
         value: function render() {
             //using template function to render component
             var html = this.getTemplate().call(this, this.getData());
+            // generate virtual dom tree
             var tree = _index2.default.parse(html);
-
-            if (this._renderStates) {
-                var patches = _index2.default.diff(this._renderStates.tree, tree);
-                _index2.default.patch(this._renderStates.root, patches);
-                this._renderStates.html = html;
-                this._renderStates.tree = tree;
-                console.log('do patch');
+            var lastRender = this._lastRender;
+            // update component
+            if (lastRender) {
+                // diff two trees: last and current 
+                var patches = _index2.default.diff(lastRender.tree, tree);
+                if (!this._isEmptyObject(patches)) {
+                    // patch last dom tree
+                    _index2.default.patch(lastRender.root, patches);
+                    // save changes
+                    lastRender.html = html;
+                    lastRender.tree = tree;
+                }
             } else {
-                // first render
+                // first time render dom tree
                 var root = tree.render();
                 this._$mountPoint.empty().html(root);
                 // save render states
-                this._renderStates = { mountPoint: this.getMountPoint(), html: html, tree: tree, root: root };
+                this._lastRender = { mountPoint: this.getMountPoint(), html: html, tree: tree, root: root };
             }
 
             this.show();
@@ -514,6 +519,21 @@ var UIComponent = function (_EventBase) {
 
             return mp1 == mp2;
         }
+    }, {
+        key: '_isEmptyObject',
+        value: function _isEmptyObject(obj) {
+            if (obj == null || obj == undefined) {
+                return true;
+            }
+
+            for (var key in obj) {
+                if (hasOwnProperty.call(obj, key)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }]);
 
     return UIComponent;
@@ -657,7 +677,7 @@ function applyPatches(node, currentPatches) {
         if (node.textContent) {
           node.textContent = currentPatch.content;
         } else {
-          // fuck ie
+          // old ie
           node.nodeValue = currentPatch.content;
         }
         break;
@@ -710,6 +730,7 @@ function reorderChildren(node, moves) {
   });
 }
 
+// patch types
 patch.REPLACE = REPLACE;
 patch.REORDER = REORDER;
 patch.PROPS = PROPS;
@@ -1381,6 +1402,7 @@ var _patch2 = _interopRequireDefault(_patch);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+// vdom main functions
 exports.default = {
     parse: _parse2.default,
     diff: _diff2.default,
@@ -1404,9 +1426,9 @@ var _element2 = _interopRequireDefault(_element);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/*jshint -W030 */
+// regex to match element
 var tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g;
-
+// regex to match dom attribute
 var attrRE = /([\w-]+)|['"]{1}([^'"]*)['"]{1}/g;
 
 // re-used obj for quick lookups of components
@@ -1433,6 +1455,11 @@ lookup.source = true;
 lookup.track = true;
 lookup.wbr = true;
 
+/**
+ * Parse html fragement and return vitrual dom tree
+ * 
+ * Note: html must have one root element and all tags must be closed or self-closing.
+ */
 function parse(html) {
     var result = [];
     var current;
@@ -1625,6 +1652,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _listDiff = __webpack_require__(11);
+
+var _listDiff2 = _interopRequireDefault(_listDiff);
+
 var _util = __webpack_require__(1);
 
 var _util2 = _interopRequireDefault(_util);
@@ -1634,9 +1665,6 @@ var _patch = __webpack_require__(2);
 var _patch2 = _interopRequireDefault(_patch);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var listDiff = __webpack_require__(11);
-
 
 function diff(oldTree, newTree) {
   var index = 0;
@@ -1678,7 +1706,7 @@ function dfsWalk(oldNode, newNode, index, patches) {
 }
 
 function diffChildren(oldChildren, newChildren, index, patches, currentPatch) {
-  var diffs = listDiff(oldChildren, newChildren, 'key');
+  var diffs = (0, _listDiff2.default)(oldChildren, newChildren, 'key');
   newChildren = diffs.children;
 
   if (diffs.moves.length) {
@@ -1955,7 +1983,7 @@ var TestComponent = function (_UIComponent) {
         key: 'getTemplate',
         value: function getTemplate() {
             return function (data) {
-                return '<span>get data: ' + data.msg + '</span>';
+                return '<div><h2>my title</h2><span>get data: ' + data.msg + '</span></div>';
             };
         }
     }]);

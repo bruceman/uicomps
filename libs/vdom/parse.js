@@ -1,8 +1,8 @@
 import element from './element';
 
-/*jshint -W030 */
+// regex to match element
 var tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g;
-
+// regex to match dom attribute
 var attrRE = /([\w-]+)|['"]{1}([^'"]*)['"]{1}/g;
 
 // re-used obj for quick lookups of components
@@ -29,7 +29,11 @@ lookup.source = true;
 lookup.track = true;
 lookup.wbr = true;
 
-
+/**
+ * Parse html fragement and return vitrual dom tree
+ * 
+ * Note: html must have one root element and all tags must be closed or self-closing.
+ */
 function parse(html) {
     var result = [];
     var current;

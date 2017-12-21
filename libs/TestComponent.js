@@ -19,7 +19,7 @@ export default class TestComponent extends UIComponent {
 
     getTemplate() {
         return function (data) {
-            return `<span>get data: ${data.msg}</span>`;
+            return `<div><h2>my title</h2><span>get data: ${data.msg}</span></div>`;
         }
     }
 }
