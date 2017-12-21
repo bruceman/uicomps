@@ -2,7 +2,8 @@
  * Created by bruce.li on 12/07/2017.
  */
 
-import  EventBase from './EventBase'
+import EventBase from './EventBase';
+import vdom from './vdom/index';
 
 
 /**
@@ -28,15 +29,6 @@ export default class UIComponent extends EventBase {
     }
 
     /**
-     * Get component name
-     *
-     * Note: concrete component should override this value
-     */
-    getName() {
-        return 'UIComponent';
-    }
-
-    /**
      * Get component id
      */
     getCid() {
@@ -44,12 +36,22 @@ export default class UIComponent extends EventBase {
     }
 
     /**
-     * Generate a unique component id
-     * 
-     * Sample: cid_dalma60az2e_50
+     * Generate an unique component id
+     *
+     * Sample: cid_yny9090snab_5307670
      */
     generateCid() {
-        return 'cid_' + Math.random().toString(36).substr(2) + '_' + Math.floor(Math.random() * 100);
+        // random number + last 7 numbers of current time
+        return 'cid_' + Math.random().toString(36).substr(2) + '_' + new Date().getTime().toString().substr(-7);
+    }
+
+    /**
+     * Get component name
+     *
+     * Note: concrete component should override this value
+     */
+    getName() {
+        return 'UIComponent';
     }
 
     /**
@@ -172,7 +174,7 @@ export default class UIComponent extends EventBase {
         if (!this._renderStates) {
             return true;
         }
-        
+
         // make sure this have no side effect to this component
         const html = this.getTemplate().call(this, (this.getData()));
         return (html != this._renderStates.html) || !this._isSameMountPoint(this.getMountPoint(), this._renderStates.mountPoint);
@@ -196,9 +198,40 @@ export default class UIComponent extends EventBase {
     render() {
         //using template function to render component
         const html = this.getTemplate().call(this, (this.getData()));
-        this._$mountPoint.empty().html(html);
-        this._saveRenderStates(this.getMountPoint(), html);
+        const tree = vdom.parse(html);
+
+        if (this._renderStates) {
+            const patches = vdom.diff(this._renderStates.tree, tree);
+            vdom.patch(this._renderStates.root, patches);
+            this._renderStates.html = html;
+            this._renderStates.tree = tree;
+            console.log('do patch');
+        } else {
+            // first render
+            const root = tree.render();
+            this._$mountPoint.empty().html(root);
+            // save render states
+            this._renderStates = { mountPoint: this.getMountPoint(), html, tree, root }
+        }
+
         this.show();
+    }
+
+    /**
+     * Will be invoked before container relayout the component
+     *
+     * The container decide when to invoke this method, the component can save states before reflow.
+     */
+    willReflow() {
+    }
+
+    /**
+     * Will be invoked after container relayout the component
+     *
+     * The container decide when to invoke this method, the component can update UI after reflow.
+     *
+     */
+    didReflow() {
     }
 
     /**
@@ -259,7 +292,7 @@ export default class UIComponent extends EventBase {
         } else {
             this._$mountPoint.empty();
         }
-        
+
         this.didDestroy();
     }
 
@@ -275,12 +308,13 @@ export default class UIComponent extends EventBase {
     didDestroy() {
     }
 
-    // keep component render states
-    _saveRenderStates(mountPoint, html) {
-        this._renderStates = {
-            mountPoint,
-            html
-        }
+    /**
+     * find child elements by selector
+     *
+     * @param selector
+     */
+    findChildren(selector) {
+        return $(this.getMountPoint()).find(selector);
     }
 
     // compare two mount point 

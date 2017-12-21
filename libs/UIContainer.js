@@ -135,10 +135,10 @@ export default class UIContainer extends UIComponent {
      */
     removeComponent(index, removeMountPoint) {
         if (index < this.getComponentCount()) {
-            const component = this._components.splice(index,1)[0];
+            const component = this._components.splice(index, 1)[0];
             // let component clean its resources firstly
             component.destroy(removeMountPoint);
-           
+
             return component;
         }
     }

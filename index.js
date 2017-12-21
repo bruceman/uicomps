@@ -27,6 +27,7 @@ setInterval(function () {
     con.update();
 }, 1000);
 
+// error
 setTimeout(function() {
     //remove last
     console.log('remove comp:')
