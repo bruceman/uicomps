@@ -2,8 +2,8 @@
  * Created by bruce.li on 12/07/2017.
  */
 
+import tvdom from 'tvdom';
 import EventBase from './EventBase';
-import vdom from './vdom/index';
 
 
 /**
@@ -94,7 +94,7 @@ export default class UIComponent extends EventBase {
 
     /**
      * Get the parent of this component
-     * 
+     *
      * @see UIContainer
      */
     getContainer() {
@@ -104,8 +104,8 @@ export default class UIComponent extends EventBase {
     /**
      * Set the parent of this component
      *
-     * @param {UIContainer} container 
-     * 
+     * @param {UIContainer} container
+     *
      * Note: the container shuold involke this method when add a new component
      */
     setContainer(container) {
@@ -153,7 +153,7 @@ export default class UIComponent extends EventBase {
 
     /**
      * Update the component changes to the document
-     * 
+     *
      * @param forceUpdate {boolean} - whether force update even if UI have no changes [optional], default is false.
      */
     update(forceUpdate) {
@@ -196,17 +196,17 @@ export default class UIComponent extends EventBase {
      */
     render() {
         //using template function to render component
-        const html = this.getTemplate().call(this, (this.getData()));
+        const html = this.getTemplate().call(this, (this.getData())).trim();
         // generate virtual dom tree
-        const tree = vdom.parse(html);
+        const tree = tvdom.parse(html);
         const lastRender = this._lastRender;
         // update component
         if (lastRender) {
-            // diff two trees: last and current 
-            const patches = vdom.diff(lastRender.tree, tree);
+            // diff two trees: last and current
+            const patches = tvdom.diff(lastRender.tree, tree);
             if (!this._isEmptyObject(patches)) {
                 // patch last dom tree
-                vdom.patch(lastRender.root, patches);
+                tvdom.patch(lastRender.root, patches);
                 // save changes
                 lastRender.html = html;
                 lastRender.tree = tree;
@@ -218,8 +218,6 @@ export default class UIComponent extends EventBase {
             // save render states
             this._lastRender = { mountPoint: this.getMountPoint(), html, tree, root}
         }
-
-        this.show();
     }
 
     /**
@@ -246,7 +244,6 @@ export default class UIComponent extends EventBase {
      */
     show() {
         this._$mountPoint.show();
-        this._visible = true;
     }
 
     /**
@@ -256,16 +253,17 @@ export default class UIComponent extends EventBase {
      */
     hide() {
         this._$mountPoint.hide();
-        this._visible = false;
     }
 
     /**
-     * Check component whether is visible
+     * Check component whether is visible or hidden
      *
      * @returns {boolean}
      */
     isVisible() {
-        return !!this._visible;
+        const display = this._$mountPoint.css('display');
+        const visibility = this._$mountPoint.css('visibility');
+        return (visibility !== 'hidden' && display !== 'none');
     }
 
     /**
@@ -298,6 +296,13 @@ export default class UIComponent extends EventBase {
             this._$mountPoint.empty();
         }
 
+        // remove exists handler
+        if (this._scrollHandler) {
+            $(window).off('scroll', this._scrollHandler);
+            this._scrollHandler = null;
+        }
+        // remove cache
+        this._lastRender = null;
         this.didDestroy();
     }
 
@@ -322,7 +327,62 @@ export default class UIComponent extends EventBase {
         return $(this.getMountPoint()).find(selector);
     }
 
-    // compare two mount point 
+    /**
+     * Enable trigger expression event when customer see this component
+     *
+     * Note: should invoke this function manually
+     */
+    enableExpressionEvent() {
+        if (this._scrollHandler) {
+            return;
+        }
+        // hold function ref
+        this._scrollHandler = this._throttle(this._scrollEventHandler.bind(this), 200);
+        $(window).on('scroll', this._scrollHandler);
+    }
+
+    _scrollEventHandler() {
+        if (!this.isVisible()) {
+            return;
+        }
+
+        console.log('scroll check....');
+
+        if (this._checkComponentInView()) {
+            this.emit('expression', {name: this.getName()});
+            console.log('expression event fired: ', this.getName());
+            // remove un-used handler to avoid performance issue
+            $(window).off('scroll', this._scrollHandler);
+            this._scrollHandler = null;
+        }
+
+    }
+
+    // check the component is in view or upper the view
+    _checkComponentInView() {
+        const $window = $(window);
+        const componentOffsetTop = this._$mountPoint.offset().top;
+        const windowScrollTop = $window.scrollTop();
+        const windowHeight = $window.height();
+        // the component is in view or upper than current view (throttle time)
+       return (windowScrollTop > (componentOffsetTop - windowHeight));
+    }
+
+    // wait a function execution
+    _throttle (callback, limit) {
+        let inThrottle = false;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                callback.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        }
+    }
+
+    // compare two mount point
     _isSameMountPoint(mp1, mp2) {
         if (!mp1 || !mp2) {
             return false;

@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -76,13 +76,13 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _EventBase2 = __webpack_require__(6);
+var _tvdom = __webpack_require__(4);
+
+var _tvdom2 = _interopRequireDefault(_tvdom);
+
+var _EventBase2 = __webpack_require__(5);
 
 var _EventBase3 = _interopRequireDefault(_EventBase2);
-
-var _index = __webpack_require__(7);
-
-var _index2 = _interopRequireDefault(_index);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -210,7 +210,7 @@ var UIComponent = function (_EventBase) {
 
         /**
          * Get the parent of this component
-         * 
+         *
          * @see UIContainer
          */
 
@@ -223,8 +223,8 @@ var UIComponent = function (_EventBase) {
         /**
          * Set the parent of this component
          *
-         * @param {UIContainer} container 
-         * 
+         * @param {UIContainer} container
+         *
          * Note: the container shuold involke this method when add a new component
          */
 
@@ -288,7 +288,7 @@ var UIComponent = function (_EventBase) {
 
         /**
          * Update the component changes to the document
-         * 
+         *
          * @param forceUpdate {boolean} - whether force update even if UI have no changes [optional], default is false.
          */
 
@@ -344,17 +344,17 @@ var UIComponent = function (_EventBase) {
         key: 'render',
         value: function render() {
             //using template function to render component
-            var html = this.getTemplate().call(this, this.getData());
+            var html = this.getTemplate().call(this, this.getData()).trim();
             // generate virtual dom tree
-            var tree = _index2.default.parse(html);
+            var tree = _tvdom2.default.parse(html);
             var lastRender = this._lastRender;
             // update component
             if (lastRender) {
-                // diff two trees: last and current 
-                var patches = _index2.default.diff(lastRender.tree, tree);
+                // diff two trees: last and current
+                var patches = _tvdom2.default.diff(lastRender.tree, tree);
                 if (!this._isEmptyObject(patches)) {
                     // patch last dom tree
-                    _index2.default.patch(lastRender.root, patches);
+                    _tvdom2.default.patch(lastRender.root, patches);
                     // save changes
                     lastRender.html = html;
                     lastRender.tree = tree;
@@ -366,8 +366,6 @@ var UIComponent = function (_EventBase) {
                 // save render states
                 this._lastRender = { mountPoint: this.getMountPoint(), html: html, tree: tree, root: root };
             }
-
-            this.show();
         }
 
         /**
@@ -401,7 +399,6 @@ var UIComponent = function (_EventBase) {
         key: 'show',
         value: function show() {
             this._$mountPoint.show();
-            this._visible = true;
         }
 
         /**
@@ -414,11 +411,10 @@ var UIComponent = function (_EventBase) {
         key: 'hide',
         value: function hide() {
             this._$mountPoint.hide();
-            this._visible = false;
         }
 
         /**
-         * Check component whether is visible
+         * Check component whether is visible or hidden
          *
          * @returns {boolean}
          */
@@ -426,7 +422,9 @@ var UIComponent = function (_EventBase) {
     }, {
         key: 'isVisible',
         value: function isVisible() {
-            return !!this._visible;
+            var display = this._$mountPoint.css('display');
+            var visibility = this._$mountPoint.css('visibility');
+            return visibility !== 'hidden' && display !== 'none';
         }
 
         /**
@@ -468,6 +466,13 @@ var UIComponent = function (_EventBase) {
                 this._$mountPoint.empty();
             }
 
+            // remove exists handler
+            if (this._scrollHandler) {
+                $(window).off('scroll', this._scrollHandler);
+                this._scrollHandler = null;
+            }
+            // remove cache
+            this._lastRender = null;
             this.didDestroy();
         }
 
@@ -499,7 +504,73 @@ var UIComponent = function (_EventBase) {
             return $(this.getMountPoint()).find(selector);
         }
 
-        // compare two mount point 
+        /**
+         * Enable trigger expression event when customer see this component
+         *
+         * Note: should invoke this function manually
+         */
+
+    }, {
+        key: 'enableExpressionEvent',
+        value: function enableExpressionEvent() {
+            if (this._scrollHandler) {
+                return;
+            }
+            // hold function ref
+            this._scrollHandler = this._throttle(this._scrollEventHandler.bind(this), 200);
+            $(window).on('scroll', this._scrollHandler);
+        }
+    }, {
+        key: '_scrollEventHandler',
+        value: function _scrollEventHandler() {
+            if (!this.isVisible()) {
+                return;
+            }
+
+            console.log('scroll check....');
+
+            if (this._checkComponentInView()) {
+                this.emit('expression', { name: this.getName() });
+                console.log('expression event fired: ', this.getName());
+                // remove un-used handler to avoid performance issue
+                $(window).off('scroll', this._scrollHandler);
+                this._scrollHandler = null;
+            }
+        }
+
+        // check the component is in view or upper the view
+
+    }, {
+        key: '_checkComponentInView',
+        value: function _checkComponentInView() {
+            var $window = $(window);
+            var componentOffsetTop = this._$mountPoint.offset().top;
+            var windowScrollTop = $window.scrollTop();
+            var windowHeight = $window.height();
+            // the component is in view or upper than current view (throttle time)
+            return windowScrollTop > componentOffsetTop - windowHeight;
+        }
+
+        // wait a function execution
+
+    }, {
+        key: '_throttle',
+        value: function _throttle(callback, limit) {
+            var inThrottle = false;
+            return function () {
+                var args = arguments;
+                var context = this;
+                if (!inThrottle) {
+                    callback.apply(context, args);
+                    inThrottle = true;
+                    setTimeout(function () {
+                        return inThrottle = false;
+                    }, limit);
+                }
+            };
+        }
+
+        // compare two mount point
 
     }, {
         key: '_isSameMountPoint',
@@ -548,212 +619,15 @@ exports.default = UIComponent;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-var _ = {};
-
-_.type = function (obj) {
-  return Object.prototype.toString.call(obj).replace(/\[object\s|\]/g, '');
-};
-
-_.isArray = function isArray(list) {
-  return _.type(list) === 'Array';
-};
-
-_.slice = function slice(arrayLike, index) {
-  return Array.prototype.slice.call(arrayLike, index);
-};
-
-_.truthy = function truthy(value) {
-  return !!value;
-};
-
-_.isString = function isString(list) {
-  return _.type(list) === 'String';
-};
-
-_.each = function each(array, fn) {
-  for (var i = 0, len = array.length; i < len; i++) {
-    fn(array[i], i);
-  }
-};
-
-_.toArray = function toArray(listLike) {
-  if (!listLike) {
-    return [];
-  }
-
-  var list = [];
-
-  for (var i = 0, len = listLike.length; i < len; i++) {
-    list.push(listLike[i]);
-  }
-
-  return list;
-};
-
-_.setAttr = function setAttr(node, key, value) {
-  switch (key) {
-    case 'style':
-      node.style.cssText = value;
-      break;
-    case 'value':
-      var tagName = node.tagName || '';
-      tagName = tagName.toLowerCase();
-      if (tagName === 'input' || tagName === 'textarea') {
-        node.value = value;
-      } else {
-        // if it is not a input or textarea, use `setAttribute` to set
-        node.setAttribute(key, value);
-      }
-      break;
-    default:
-      node.setAttribute(key, value);
-      break;
-  }
-};
-
-exports.default = _;
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var _util = __webpack_require__(1);
-
-var _util2 = _interopRequireDefault(_util);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var REPLACE = 0;
-var REORDER = 1;
-var PROPS = 2;
-var TEXT = 3;
-
-function patch(node, patches) {
-  var walker = { index: 0 };
-  dfsWalk(node, walker, patches);
-}
-
-function dfsWalk(node, walker, patches) {
-  var currentPatches = patches[walker.index];
-
-  var len = node.childNodes ? node.childNodes.length : 0;
-  for (var i = 0; i < len; i++) {
-    var child = node.childNodes[i];
-    walker.index++;
-    dfsWalk(child, walker, patches);
-  }
-
-  if (currentPatches) {
-    applyPatches(node, currentPatches);
-  }
-}
-
-function applyPatches(node, currentPatches) {
-  _util2.default.each(currentPatches, function (currentPatch) {
-    switch (currentPatch.type) {
-      case REPLACE:
-        var newNode = typeof currentPatch.node === 'string' ? document.createTextNode(currentPatch.node) : currentPatch.node.render();
-        node.parentNode.replaceChild(newNode, node);
-        break;
-      case REORDER:
-        reorderChildren(node, currentPatch.moves);
-        break;
-      case PROPS:
-        setProps(node, currentPatch.props);
-        break;
-      case TEXT:
-        if (node.textContent) {
-          node.textContent = currentPatch.content;
-        } else {
-          // old ie
-          node.nodeValue = currentPatch.content;
-        }
-        break;
-      default:
-        throw new Error('Unknown patch type ' + currentPatch.type);
-    }
-  });
-}
-
-function setProps(node, props) {
-  for (var key in props) {
-    if (props[key] === void 666) {
-      node.removeAttribute(key);
-    } else {
-      var value = props[key];
-      _util2.default.setAttr(node, key, value);
-    }
-  }
-}
-
-function reorderChildren(node, moves) {
-  var staticNodeList = _util2.default.toArray(node.childNodes);
-  var maps = {};
-
-  _util2.default.each(staticNodeList, function (node) {
-    if (node.nodeType === 1) {
-      var key = node.getAttribute('key');
-      if (key) {
-        maps[key] = node;
-      }
-    }
-  });
-
-  _util2.default.each(moves, function (move) {
-    var index = move.index;
-    if (move.type === 0) {
-      // remove item
-      if (staticNodeList[index] && staticNodeList[index] === node.childNodes[index]) {
-        // maybe have been removed for inserting
-        node.removeChild(node.childNodes[index]);
-      }
-      staticNodeList.splice(index, 1);
-    } else if (move.type === 1) {
-      // insert item
-      var insertNode = maps[move.item.key] ? maps[move.item.key].cloneNode(true) // reuse old item
-      : _typeof(move.item) === 'object' ? move.item.render() : document.createTextNode(move.item);
-      staticNodeList.splice(index, 0, insertNode);
-      node.insertBefore(insertNode, node.childNodes[index] || null);
-    }
-  });
-}
-
-// patch types
-patch.REPLACE = REPLACE;
-patch.REORDER = REORDER;
-patch.PROPS = PROPS;
-patch.TEXT = TEXT;
-
-exports.default = patch;
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _TestContainer = __webpack_require__(4);
+var _TestContainer = __webpack_require__(2);
 
 var _TestContainer2 = _interopRequireDefault(_TestContainer);
 
-var _TestComponent = __webpack_require__(13);
+var _TestComponent = __webpack_require__(6);
 
 var _TestComponent2 = _interopRequireDefault(_TestComponent);
 
-var _LazyImage = __webpack_require__(14);
+var _LazyImage = __webpack_require__(7);
 
 var _LazyImage2 = _interopRequireDefault(_LazyImage);
 
@@ -806,7 +680,7 @@ $('.img').each(function (index, img) {
 console.log('index');
 
 /***/ }),
-/* 4 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -818,7 +692,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _UIContainer2 = __webpack_require__(5);
+var _UIContainer2 = __webpack_require__(3);
 
 var _UIContainer3 = _interopRequireDefault(_UIContainer2);
 
@@ -875,7 +749,7 @@ var TestContainer = function (_UIContainer) {
 exports.default = TestContainer;
 
 /***/ }),
-/* 5 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -943,8 +817,44 @@ var UIContainer = function (_UIComponent) {
         }
 
         /**
+         * Append the component to the document and show the component
+         */
+
+    }, {
+        key: 'mount',
+        value: function mount() {
+            // container mount
+            _get(UIContainer.prototype.__proto__ || Object.getPrototypeOf(UIContainer.prototype), 'mount', this).call(this);
+
+            // children mount
+            this.willMountChildren();
+            this._components.forEach(function (component) {
+                component.mount();
+            });
+            this.didMountChildren();
+        }
+
+        /**
+         * This method will be invoked before mount children components
+         *
+         * Concrete container can implement this method to setup children entry points etc.
+         */
+
+    }, {
+        key: 'willMountChildren',
+        value: function willMountChildren() {}
+
+        /**
+         * This method will be invoked after mount children components
+         */
+
+    }, {
+        key: 'didMountChildren',
+        value: function didMountChildren() {}
+
+        /**
          * Update the container and children changes to the document
-         * 
+         *
          * @param forceUpdate {boolean} - whether force update even if UI have no changes , default is false. [optional]
          */
 
@@ -954,51 +864,33 @@ var UIContainer = function (_UIComponent) {
             // container update
             _get(UIContainer.prototype.__proto__ || Object.getPrototypeOf(UIContainer.prototype), 'update', this).call(this, forceUpdate);
 
-            // children update 
+            // children update
+            this.willUpdateChildren(forceUpdate);
             this._components.forEach(function (component) {
                 component.update(forceUpdate);
             });
+            this.didUpdateChildren(forceUpdate);
         }
 
         /**
-         * Render component by calling template function
+         * This method will be invoked before update children components
          *
-         * Note: concrete container can implement special render logic
+         * @param forceUpdate {boolean} - whether force update even if UI have no changes , default is false. [optional]
          */
 
     }, {
-        key: 'render',
-        value: function render() {
-            //render container firstly (setup entry point)
-            _get(UIContainer.prototype.__proto__ || Object.getPrototypeOf(UIContainer.prototype), 'render', this).call(this);
-
-            // render children
-            if (this._components.length > 0) {
-                this.willRenderChildren();
-                this._components.forEach(function (component) {
-                    component.render();
-                });
-                this.didRenderChildren();
-            }
-        }
+        key: 'willUpdateChildren',
+        value: function willUpdateChildren(forceUpdate) {}
 
         /**
-         * This method will be invoked before render children components
+         * This method will be invoked after update children components
          *
-         * Concrete container can implement this method to setup children entry points etc.
+         * @param forceUpdate {boolean} - whether force update even if UI have no changes , default is false. [optional]
          */
 
     }, {
-        key: 'willRenderChildren',
-        value: function willRenderChildren() {}
-
-        /**
-         * This method will be invoked after render children components
-         */
-
-    }, {
-        key: 'didRenderChildren',
-        value: function didRenderChildren() {}
+        key: 'didUpdateChildren',
+        value: function didUpdateChildren(forceUpdate) {}
 
         /**
          * Add component to this container
@@ -1078,7 +970,7 @@ var UIContainer = function (_UIComponent) {
 
         /**
          * Remove all children components in this container
-         * 
+         *
          * @param removeMountPoint {boolean} - remove mount point if true otherwise remove component dom only
          */
 
@@ -1092,7 +984,7 @@ var UIContainer = function (_UIComponent) {
 
         /**
          * Destroy component from document and clean related global resources
-         * 
+         *
          * @param removeMountPoint {boolean} - remove mount point if true otherwise remove component dom only
          */
 
@@ -1118,7 +1010,15 @@ var UIContainer = function (_UIComponent) {
 exports.default = UIContainer;
 
 /***/ }),
-/* 6 */
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+function Element(e,t,n){if(!(this instanceof Element))return _.isArray(n)||null==n||(n=_.slice(arguments,2).filter(_.truthy)),new Element(e,t,n);_.isArray(t)&&(n=t,t={}),this.tagName=e,this.props=t||{},this.children=n||[],this.key=t?t.key:void 0;var r=0;_.each(this.children,function(e,t){e instanceof Element?r+=e.count:n[t]=""+e,r++}),this.count=r}function parse(e){var t,n=[],r=-1,o=[],i={};if(e.replace(tagRE,function(a,l){var c,s="/"!==a.charAt(1),f=l+a.length,u=e.charAt(f);s&&(r++,!(t=parseTag(a)).voidElement&&u&&"<"!==u&&t.children.push({type:"text",content:e.slice(f,e.indexOf("<",f))}),i[t.tagName]=t,0===r&&n.push(t),(c=o[r-1])&&c.children.push(t),o[r]=t),s&&!t.voidElement||(r--,"<"!==u&&u&&o[r].children.push({type:"text",content:e.slice(f,e.indexOf("<",f))}))}),1!==n.length)throw new Error("Must have one root container");return toElement(n[0])}function parseTag(e){var t,n=0,r={type:"tag",name:"",voidElement:!1,attrs:{},children:[]};return e.replace(attrRE,function(o){n%2?t=o:0===n?((lookup[o]||"/"===e.charAt(e.length-2))&&(r.voidElement=!0),r.name=o):r.attrs[t]=o.replace(/['"]/g,""),n++}),r}function toElement(e){var t=[];return e.children.forEach(function(e){"text"==e.type?t.push(e.content):t.push(toElement(e))}),Element(e.name,e.attrs,t)}function diff$2(e,t,n){function r(e){var t={index:e,type:0};d.push(t)}function o(e,t){var n={index:e,item:t,type:1};d.push(n)}function i(e){E.splice(e,1)}for(var a,l,c=makeKeyIndexAndFree(e,n),s=makeKeyIndexAndFree(t,n),f=s.free,u=c.keyIndex,p=s.keyIndex,d=[],h=[],y=0,m=0;y<e.length;){if(a=e[y],l=getItemKey(a,n))if(p.hasOwnProperty(l)){var v=p[l];h.push(t[v])}else h.push(null);else{var k=f[m++];h.push(k||null)}y++}var E=h.slice(0);for(y=0;y<E.length;)null===E[y]?(r(y),i(y)):y++;for(var g=y=0;y<t.length;){l=getItemKey(a=t[y],n);var _=E[g],x=getItemKey(_,n);if(_)if(l===x)g++;else if(u.hasOwnProperty(l)){getItemKey(E[g+1],n)===l?(r(y),i(g),g++):o(y,a)}else o(y,a);else o(y,a);y++}return{moves:d,children:h}}function makeKeyIndexAndFree(e,t){for(var n={},r=[],o=0,i=e.length;o<i;o++){var a=e[o],l=getItemKey(a,t);l?n[l]=o:r.push(a)}return{keyIndex:n,free:r}}function getItemKey(e,t){if(e&&t)return"string"==typeof t?e[t]:t(e)}function patch(e,t){dfsWalk$1(e,{index:0},t)}function dfsWalk$1(e,t,n){for(var r=n[t.index],o=e.childNodes?e.childNodes.length:0,i=0;i<o;i++){var a=e.childNodes[i];t.index++,dfsWalk$1(a,t,n)}r&&applyPatches(e,r)}function applyPatches(e,t){_.each(t,function(t){switch(t.type){case REPLACE:var n="string"==typeof t.node?document.createTextNode(t.node):t.node.render();e.parentNode.replaceChild(n,e);break;case REORDER:reorderChildren(e,t.moves);break;case PROPS:setProps(e,t.props);break;case TEXT:e.textContent?e.textContent=t.content:e.nodeValue=t.content;break;default:throw new Error("Unknown patch type "+t.type)}})}function setProps(e,t){for(var n in t)if(void 0===t[n])e.removeAttribute(n);else{var r=t[n];_.setAttr(e,n,r)}}function reorderChildren(e,t){var n=_.toArray(e.childNodes),r={};_.each(n,function(e){if(1===e.nodeType){var t=e.getAttribute("key");t&&(r[t]=e)}}),_.each(t,function(t){var o=t.index;if(0===t.type)n[o]&&n[o]===e.childNodes[o]&&e.removeChild(e.childNodes[o]),n.splice(o,1);else if(1===t.type){var i=r[t.item.key]?r[t.item.key].cloneNode(!0):"object"===_typeof(t.item)?t.item.render():document.createTextNode(t.item);n.splice(o,0,i),e.insertBefore(i,e.childNodes[o]||null)}})}function diff(e,t){var n={};return dfsWalk(e,t,0,n),n}function dfsWalk(e,t,n,r){var o=[];if(null===t);else if(_.isString(e)&&_.isString(t))t!==e&&o.push({type:patch.TEXT,content:t});else if(e.tagName===t.tagName&&e.key===t.key){var i=diffProps(e,t);i&&o.push({type:patch.PROPS,props:i}),isIgnoreChildren(t)||diffChildren(e.children,t.children,n,r,o)}else o.push({type:patch.REPLACE,node:t});o.length&&(r[n]=o)}function diffChildren(e,t,n,r,o){var i=listDiff2(e,t,"key");if(t=i.children,i.moves.length){var a={type:patch.REORDER,moves:i.moves};o.push(a)}var l=null,c=n;_.each(e,function(e,n){dfsWalk(e,t[n],c=l&&l.count?c+l.count+1:c+1,r),l=e})}function diffProps(e,t){var n,r,o=0,i=e.props,a=t.props,l={};for(n in i)r=i[n],a[n]!==r&&(o++,l[n]=a[n]);for(n in a)r=a[n],i.hasOwnProperty(n)||(o++,l[n]=a[n]);return 0===o?null:l}function isIgnoreChildren(e){return e.props&&e.props.hasOwnProperty("ignore")}var _={};_.type=function(e){return Object.prototype.toString.call(e).replace(/\[object\s|\]/g,"")},_.isArray=function(e){return"Array"===_.type(e)},_.slice=function(e,t){return Array.prototype.slice.call(e,t)},_.truthy=function(e){return!!e},_.isString=function(e){return"String"===_.type(e)},_.each=function(e,t){for(var n=0,r=e.length;n<r;n++)t(e[n],n)},_.toArray=function(e){if(!e)return[];for(var t=[],n=0,r=e.length;n<r;n++)t.push(e[n]);return t},_.setAttr=function(e,t,n){switch(t){case"style":e.style.cssText=n;break;case"value":var r=e.tagName||"";"input"===(r=r.toLowerCase())||"textarea"===r?e.value=n:e.setAttribute(t,n);break;default:e.setAttribute(t,n)}},Element.prototype.render=function(){var e=document.createElement(this.tagName),t=this.props;for(var n in t){var r=t[n];_.setAttr(e,n,r)}return _.each(this.children,function(t){var n=t instanceof Element?t.render():document.createTextNode(t);e.appendChild(n)}),e};var tagRE=/<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g,attrRE=/([\w-]+)|['"]{1}([^'"]*)['"]{1}/g,lookup=Object.create?Object.create(null):{};lookup.area=!0,lookup.base=!0,lookup.br=!0,lookup.col=!0,lookup.embed=!0,lookup.hr=!0,lookup.img=!0,lookup.input=!0,lookup.keygen=!0,lookup.link=!0,lookup.menuitem=!0,lookup.meta=!0,lookup.param=!0,lookup.source=!0,lookup.track=!0,lookup.wbr=!0;var makeKeyIndexAndFree_1=makeKeyIndexAndFree,diff_2=diff$2,diff_1={makeKeyIndexAndFree:makeKeyIndexAndFree_1,diff:diff_2},listDiff2=diff_1.diff,_typeof="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},REPLACE=0,REORDER=1,PROPS=2,TEXT=3;patch.REPLACE=REPLACE,patch.REORDER=REORDER,patch.PROPS=PROPS,patch.TEXT=TEXT;var main={parse:parse,diff:diff,patch:patch};/* harmony default export */ __webpack_exports__["default"] = (main);
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1378,553 +1278,7 @@ var EventBase = function () {
 exports.default = EventBase;
 
 /***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _parse = __webpack_require__(8);
-
-var _parse2 = _interopRequireDefault(_parse);
-
-var _diff = __webpack_require__(10);
-
-var _diff2 = _interopRequireDefault(_diff);
-
-var _patch = __webpack_require__(2);
-
-var _patch2 = _interopRequireDefault(_patch);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-// vdom main functions
-exports.default = {
-    parse: _parse2.default,
-    diff: _diff2.default,
-    patch: _patch2.default
-};
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _element = __webpack_require__(9);
-
-var _element2 = _interopRequireDefault(_element);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-// regex to match element
-var tagRE = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g;
-// regex to match dom attribute
-var attrRE = /([\w-]+)|['"]{1}([^'"]*)['"]{1}/g;
-
-// re-used obj for quick lookups of components
-var empty = Object.create ? Object.create(null) : {};
-
-// create optimized lookup object for
-// void elements as listed here: 
-// http://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
-var lookup = Object.create ? Object.create(null) : {};
-lookup.area = true;
-lookup.base = true;
-lookup.br = true;
-lookup.col = true;
-lookup.embed = true;
-lookup.hr = true;
-lookup.img = true;
-lookup.input = true;
-lookup.keygen = true;
-lookup.link = true;
-lookup.menuitem = true;
-lookup.meta = true;
-lookup.param = true;
-lookup.source = true;
-lookup.track = true;
-lookup.wbr = true;
-
-/**
- * Parse html fragement and return vitrual dom tree
- * 
- * Note: html must have one root element and all tags must be closed or self-closing.
- */
-function parse(html) {
-    var result = [];
-    var current;
-    var level = -1;
-    var arr = [];
-    var byTag = {};
-
-    html.replace(tagRE, function (tag, index) {
-        var isOpen = tag.charAt(1) !== '/';
-        var start = index + tag.length;
-        var nextChar = html.charAt(start);
-        var parent;
-
-        if (isOpen) {
-            level++;
-
-            current = parseTag(tag);
-
-            if (!current.voidElement && nextChar && nextChar !== '<') {
-                current.children.push({
-                    type: 'text',
-                    content: html.slice(start, html.indexOf('<', start))
-                });
-            }
-
-            byTag[current.tagName] = current;
-
-            // if we're at root, push new base node
-            if (level === 0) {
-                result.push(current);
-            }
-
-            parent = arr[level - 1];
-
-            if (parent) {
-                parent.children.push(current);
-            }
-
-            arr[level] = current;
-        }
-
-        if (!isOpen || current.voidElement) {
-            level--;
-            if (nextChar !== '<' && nextChar) {
-                // trailing text node
-                arr[level].children.push({
-                    type: 'text',
-                    content: html.slice(start, html.indexOf('<', start))
-                });
-            }
-        }
-    });
-
-    if (result.length !== 1) {
-        throw new Error('Must have one root container');
-    }
-
-    return toElement(result[0]);
-};
-
-function parseTag(tag) {
-    var i = 0;
-    var key;
-    var res = {
-        type: 'tag',
-        name: '',
-        voidElement: false,
-        attrs: {},
-        children: []
-    };
-
-    tag.replace(attrRE, function (match) {
-        if (i % 2) {
-            key = match;
-        } else {
-            if (i === 0) {
-                if (lookup[match] || tag.charAt(tag.length - 2) === '/') {
-                    res.voidElement = true;
-                }
-                res.name = match;
-            } else {
-                res.attrs[key] = match.replace(/['"]/g, '');
-            }
-        }
-        i++;
-    });
-
-    return res;
-};
-
-// to vdom element
-function toElement(el) {
-    var children = [];
-    el.children.forEach(function (child) {
-        if (child.type == 'text') {
-            children.push(child.content);
-        } else {
-            children.push(toElement(child));
-        }
-    });
-
-    return (0, _element2.default)(el.name, el.attrs, children);
-}
-
-exports.default = parse;
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _util = __webpack_require__(1);
-
-var _util2 = _interopRequireDefault(_util);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/**
- * Virtual-dom Element.
- * @param {String} tagName
- * @param {Object} props - Element's properties,
- *                       - using object to store key-value pair
- * @param {Array<Element|String>} - This element's children elements.
- *                                - Can be Element instance or just a piece plain text.
- */
-function Element(tagName, props, children) {
-  if (!(this instanceof Element)) {
-    if (!_util2.default.isArray(children) && children != null) {
-      children = _util2.default.slice(arguments, 2).filter(_util2.default.truthy);
-    }
-    return new Element(tagName, props, children);
-  }
-
-  if (_util2.default.isArray(props)) {
-    children = props;
-    props = {};
-  }
-
-  this.tagName = tagName;
-  this.props = props || {};
-  this.children = children || [];
-  this.key = props ? props.key : void 666;
-
-  var count = 0;
-
-  _util2.default.each(this.children, function (child, i) {
-    if (child instanceof Element) {
-      count += child.count;
-    } else {
-      children[i] = '' + child;
-    }
-    count++;
-  });
-
-  this.count = count;
-}
-
-/**
- * Render the hold element tree.
- */
-Element.prototype.render = function () {
-  var el = document.createElement(this.tagName);
-  var props = this.props;
-
-  for (var propName in props) {
-    var propValue = props[propName];
-    _util2.default.setAttr(el, propName, propValue);
-  }
-
-  _util2.default.each(this.children, function (child) {
-    var childEl = child instanceof Element ? child.render() : document.createTextNode(child);
-    el.appendChild(childEl);
-  });
-
-  return el;
-};
-
-module.exports = Element;
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _listDiff = __webpack_require__(11);
-
-var _listDiff2 = _interopRequireDefault(_listDiff);
-
-var _util = __webpack_require__(1);
-
-var _util2 = _interopRequireDefault(_util);
-
-var _patch = __webpack_require__(2);
-
-var _patch2 = _interopRequireDefault(_patch);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function diff(oldTree, newTree) {
-  var index = 0;
-  var patches = {};
-  dfsWalk(oldTree, newTree, index, patches);
-  return patches;
-}
-
-function dfsWalk(oldNode, newNode, index, patches) {
-  var currentPatch = [];
-
-  // Node is removed.
-  if (newNode === null) {
-    // Real DOM node will be removed when perform reordering, so has no needs to do anthings in here
-    // TextNode content replacing
-  } else if (_util2.default.isString(oldNode) && _util2.default.isString(newNode)) {
-    if (newNode !== oldNode) {
-      currentPatch.push({ type: _patch2.default.TEXT, content: newNode });
-    }
-    // Nodes are the same, diff old node's props and children
-  } else if (oldNode.tagName === newNode.tagName && oldNode.key === newNode.key) {
-    // Diff props
-    var propsPatches = diffProps(oldNode, newNode);
-    if (propsPatches) {
-      currentPatch.push({ type: _patch2.default.PROPS, props: propsPatches });
-    }
-    // Diff children. If the node has a `ignore` property, do not diff children
-    if (!isIgnoreChildren(newNode)) {
-      diffChildren(oldNode.children, newNode.children, index, patches, currentPatch);
-    }
-    // Nodes are not the same, replace the old node with new node
-  } else {
-    currentPatch.push({ type: _patch2.default.REPLACE, node: newNode });
-  }
-
-  if (currentPatch.length) {
-    patches[index] = currentPatch;
-  }
-}
-
-function diffChildren(oldChildren, newChildren, index, patches, currentPatch) {
-  var diffs = (0, _listDiff2.default)(oldChildren, newChildren, 'key');
-  newChildren = diffs.children;
-
-  if (diffs.moves.length) {
-    var reorderPatch = { type: _patch2.default.REORDER, moves: diffs.moves };
-    currentPatch.push(reorderPatch);
-  }
-
-  var leftNode = null;
-  var currentNodeIndex = index;
-  _util2.default.each(oldChildren, function (child, i) {
-    var newChild = newChildren[i];
-    currentNodeIndex = leftNode && leftNode.count ? currentNodeIndex + leftNode.count + 1 : currentNodeIndex + 1;
-    dfsWalk(child, newChild, currentNodeIndex, patches);
-    leftNode = child;
-  });
-}
-
-function diffProps(oldNode, newNode) {
-  var count = 0;
-  var oldProps = oldNode.props;
-  var newProps = newNode.props;
-
-  var key, value;
-  var propsPatches = {};
-
-  // Find out different properties
-  for (key in oldProps) {
-    value = oldProps[key];
-    if (newProps[key] !== value) {
-      count++;
-      propsPatches[key] = newProps[key];
-    }
-  }
-
-  // Find out new property
-  for (key in newProps) {
-    value = newProps[key];
-    if (!oldProps.hasOwnProperty(key)) {
-      count++;
-      propsPatches[key] = newProps[key];
-    }
-  }
-
-  // If properties all are identical
-  if (count === 0) {
-    return null;
-  }
-
-  return propsPatches;
-}
-
-function isIgnoreChildren(node) {
-  return node.props && node.props.hasOwnProperty('ignore');
-}
-
-exports.default = diff;
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(12).diff
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports) {
-
-/**
- * Diff two list in O(N).
- * @param {Array} oldList - Original List
- * @param {Array} newList - List After certain insertions, removes, or moves
- * @return {Object} - {moves: <Array>}
- *                  - moves is a list of actions that telling how to remove and insert
- */
-function diff (oldList, newList, key) {
-  var oldMap = makeKeyIndexAndFree(oldList, key)
-  var newMap = makeKeyIndexAndFree(newList, key)
-
-  var newFree = newMap.free
-
-  var oldKeyIndex = oldMap.keyIndex
-  var newKeyIndex = newMap.keyIndex
-
-  var moves = []
-
-  // a simulate list to manipulate
-  var children = []
-  var i = 0
-  var item
-  var itemKey
-  var freeIndex = 0
-
-  // fist pass to check item in old list: if it's removed or not
-  while (i < oldList.length) {
-    item = oldList[i]
-    itemKey = getItemKey(item, key)
-    if (itemKey) {
-      if (!newKeyIndex.hasOwnProperty(itemKey)) {
-        children.push(null)
-      } else {
-        var newItemIndex = newKeyIndex[itemKey]
-        children.push(newList[newItemIndex])
-      }
-    } else {
-      var freeItem = newFree[freeIndex++]
-      children.push(freeItem || null)
-    }
-    i++
-  }
-
-  var simulateList = children.slice(0)
-
-  // remove items no longer exist
-  i = 0
-  while (i < simulateList.length) {
-    if (simulateList[i] === null) {
-      remove(i)
-      removeSimulate(i)
-    } else {
-      i++
-    }
-  }
-
-  // i is cursor pointing to a item in new list
-  // j is cursor pointing to a item in simulateList
-  var j = i = 0
-  while (i < newList.length) {
-    item = newList[i]
-    itemKey = getItemKey(item, key)
-
-    var simulateItem = simulateList[j]
-    var simulateItemKey = getItemKey(simulateItem, key)
-
-    if (simulateItem) {
-      if (itemKey === simulateItemKey) {
-        j++
-      } else {
-        // new item, just inesrt it
-        if (!oldKeyIndex.hasOwnProperty(itemKey)) {
-          insert(i, item)
-        } else {
-          // if remove current simulateItem make item in right place
-          // then just remove it
-          var nextItemKey = getItemKey(simulateList[j + 1], key)
-          if (nextItemKey === itemKey) {
-            remove(i)
-            removeSimulate(j)
-            j++ // after removing, current j is right, just jump to next one
-          } else {
-            // else insert item
-            insert(i, item)
-          }
-        }
-      }
-    } else {
-      insert(i, item)
-    }
-
-    i++
-  }
-
-  function remove (index) {
-    var move = {index: index, type: 0}
-    moves.push(move)
-  }
-
-  function insert (index, item) {
-    var move = {index: index, item: item, type: 1}
-    moves.push(move)
-  }
-
-  function removeSimulate (index) {
-    simulateList.splice(index, 1)
-  }
-
-  return {
-    moves: moves,
-    children: children
-  }
-}
-
-/**
- * Convert list to key-item keyIndex object.
- * @param {Array} list
- * @param {String|Function} key
- */
-function makeKeyIndexAndFree (list, key) {
-  var keyIndex = {}
-  var free = []
-  for (var i = 0, len = list.length; i < len; i++) {
-    var item = list[i]
-    var itemKey = getItemKey(item, key)
-    if (itemKey) {
-      keyIndex[itemKey] = i
-    } else {
-      free.push(item)
-    }
-  }
-  return {
-    keyIndex: keyIndex,
-    free: free
-  }
-}
-
-function getItemKey (item, key) {
-  if (!item || !key) return void 666
-  return typeof key === 'string'
-    ? item[key]
-    : key(item)
-}
-
-exports.makeKeyIndexAndFree = makeKeyIndexAndFree // exports for test
-exports.diff = diff
-
-
-/***/ }),
-/* 13 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1994,7 +1348,7 @@ var TestComponent = function (_UIComponent) {
 exports.default = TestComponent;
 
 /***/ }),
-/* 14 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

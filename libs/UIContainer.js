@@ -34,52 +34,67 @@ export default class UIContainer extends UIComponent {
         return 'UIContainer';
     }
 
+
+    /**
+     * Append the component to the document and show the component
+     */
+    mount() {
+        // container mount
+        super.mount();
+
+        // children mount
+        this.willMountChildren();
+        this._components.forEach((component) => {
+            component.mount();
+        });
+        this.didMountChildren();
+    }
+
+    /**
+     * This method will be invoked before mount children components
+     *
+     * Concrete container can implement this method to setup children entry points etc.
+     */
+    willMountChildren() {
+    }
+
+    /**
+     * This method will be invoked after mount children components
+     */
+    didMountChildren() {
+    }
+
     /**
      * Update the container and children changes to the document
-     * 
+     *
      * @param forceUpdate {boolean} - whether force update even if UI have no changes , default is false. [optional]
      */
     update(forceUpdate) {
         // container update
         super.update(forceUpdate);
 
-        // children update 
+        // children update
+        this.willUpdateChildren(forceUpdate);
         this._components.forEach((component) => {
             component.update(forceUpdate);
         });
+        this.didUpdateChildren(forceUpdate);
     }
 
     /**
-     * Render component by calling template function
+     * This method will be invoked before update children components
      *
-     * Note: concrete container can implement special render logic
+     * @param forceUpdate {boolean} - whether force update even if UI have no changes , default is false. [optional]
      */
-    render() {
-        //render container firstly (setup entry point)
-        super.render();
-
-        // render children
-        if (this._components.length > 0) {
-            this.willRenderChildren();
-            this._components.forEach((component) => {
-                component.render();
-            });
-            this.didRenderChildren();
-        }
+    willUpdateChildren(forceUpdate) {
     }
 
     /**
-     * This method will be invoked before render children components
+     * This method will be invoked after update children components
      *
-     * Concrete container can implement this method to setup children entry points etc.
+     * @param forceUpdate {boolean} - whether force update even if UI have no changes , default is false. [optional]
      */
-    willRenderChildren() {
-    }
-
-    /**
-     * This method will be invoked after render children components
-     */
-    didRenderChildren() {
+    didUpdateChildren(forceUpdate) {
     }
 
     /**
@@ -145,7 +160,7 @@ export default class UIContainer extends UIComponent {
 
     /**
      * Remove all children components in this container
-     * 
+     *
      * @param removeMountPoint {boolean} - remove mount point if true otherwise remove component dom only
      */
     removeAllComponents(removeMountPoint) {
@@ -156,7 +171,7 @@ export default class UIContainer extends UIComponent {
 
     /**
      * Destroy component from document and clean related global resources
-     * 
+     *
      * @param removeMountPoint {boolean} - remove mount point if true otherwise remove component dom only
      */
     destroy(removeMountPoint) {
